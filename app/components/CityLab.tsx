@@ -5,12 +5,11 @@ import { motion } from 'motion/react';
 import {
   type CityParameters,
   type SimulationResult,
-  calculateSimulation,
-  DEFAULT_PARAMS,
   PRESETS,
   getScoreLabel,
   getScoreColor,
 } from '../lib/simulation';
+import { useCity } from '../context/CityContext';
 
 /* ─────────────────────── Icon Components ─────────────────────── */
 
@@ -95,7 +94,7 @@ const SLIDERS: SliderConfig[] = [
 const PRESET_LABELS: Record<string, string> = {
   current: "Today's City",
   progressive: 'Progressive',
-  ecotopia: 'Ecotopia',
+  ecotopia: 'Ecotopia 2050',
   minimal: 'Minimal Effort',
 };
 
@@ -134,22 +133,82 @@ function lerpColor(a: string, b: string, t: number): string {
 }
 
 function getSkyColor(score: number): string {
-  // Low → gray/brown (#5C534A), Mid → slate blue (#64748B), High → clean blue (#38BDF8)
   if (score < 50) {
-    return lerpColor('#5C534A', '#64748B', score / 50);
+    return lerpColor('#4A4036', '#475569', score / 50);
   }
-  return lerpColor('#64748B', '#38BDF8', (score - 50) / 50);
+  return lerpColor('#475569', '#0284C7', (score - 50) / 50);
 }
 
 function getSkyGradientBottom(score: number): string {
   if (score < 50) {
-    return lerpColor('#3D3630', '#475569', score / 50);
+    return lerpColor('#2E2620', '#334155', score / 50);
   }
-  return lerpColor('#475569', '#0EA5E9', (score - 50) / 50);
+  return lerpColor('#334155', '#0D9488', (score - 50) / 50);
+}
+
+// Canal water color transitions from murky to crystalline emerald-blue
+function getCanalWaterColor(waterConservation: number): { stop0: string; stop1: string } {
+  const t = Math.min(1, Math.max(0, waterConservation / 100));
+  // Murky algae tone: #3B4A3F to vibrant backwater emerald/teal: #0D9488 / #0284C7
+  return {
+    stop0: lerpColor('#334139', '#0F766E', t),
+    stop1: lerpColor('#3A4B40', '#0284C7', t),
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CITY VISUALIZATION (SVG)
+   KERALA 2040 STYLIZED COCONUT PALM (Kera)
+   ═══════════════════════════════════════════════════════════ */
+
+function CoconutPalm({
+  x,
+  y,
+  scale = 1,
+  opacity = 1,
+}: {
+  x: number;
+  y: number;
+  scale?: number;
+  opacity?: number;
+}) {
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${scale})`} opacity={opacity} className="transition-all duration-700">
+      {/* Slender curved trunk */}
+      <path
+        d="M 0 0 Q 6 -20 10 -42 Q 13 -48 14 -52"
+        fill="none"
+        stroke="#78350F"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+      />
+      {/* Trunk rings */}
+      <line x1="2" y1="-12" x2="5" y2="-11" stroke="#92400E" strokeWidth="1.2" />
+      <line x1="5" y1="-25" x2="8" y2="-24" stroke="#92400E" strokeWidth="1.2" />
+      <line x1="9" y1="-38" x2="12" y2="-37" stroke="#92400E" strokeWidth="1.2" />
+
+      {/* Palm fronds radiating gracefully */}
+      <g transform="translate(14, -52)">
+        {/* Left fronds */}
+        <path d="M 0 0 Q -15 -12 -28 -4" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M 0 0 Q -18 -4 -26 8" fill="none" stroke="#10B981" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M 0 0 Q -12 -18 -18 -24" fill="none" stroke="#34D399" strokeWidth="2" strokeLinecap="round" />
+        
+        {/* Right fronds */}
+        <path d="M 0 0 Q 15 -14 28 -6" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M 0 0 Q 18 -4 26 7" fill="none" stroke="#10B981" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M 0 0 Q 10 -18 16 -24" fill="none" stroke="#34D399" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Small golden coconut cluster */}
+        <circle cx="-1" cy="2" r="2.2" fill="#D97706" />
+        <circle cx="2" cy="1" r="2.2" fill="#B45309" />
+        <circle cx="1" cy="4" r="2" fill="#D97706" />
+      </g>
+    </g>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CITY VISUALIZATION (SVG) — Enhanced with Kerala 2040 Touches
    ═══════════════════════════════════════════════════════════ */
 
 function CityVisualization({ result }: { result: SimulationResult }) {
@@ -157,401 +216,301 @@ function CityVisualization({ result }: { result: SimulationResult }) {
   const score = result.sustainabilityIndex;
   const skyTop = getSkyColor(score);
   const skyBottom = getSkyGradientBottom(score);
+  const canalColors = getCanalWaterColor(v.waterFeatures * 100);
 
   return (
-    <svg
-      viewBox="0 0 600 400"
-      className="w-full h-auto max-h-[450px]"
-      aria-label="Interactive city visualization reflecting sustainability parameters"
-      role="img"
-    >
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={skyTop} className="transition-all duration-700" />
-          <stop offset="100%" stopColor={skyBottom} className="transition-all duration-700" />
-        </linearGradient>
-        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a2e1a" />
-          <stop offset="100%" stopColor="#0D1B0D" />
-        </linearGradient>
-        <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#0369a1" />
-          <stop offset="100%" stopColor="#0ea5e9" />
-        </linearGradient>
-      </defs>
+    <div className="relative w-full">
+      <svg
+        viewBox="0 0 600 400"
+        className="w-full h-auto max-h-[460px] select-none"
+        aria-label="Interactive Kerala 2040 sustainable city visualization"
+        role="img"
+      >
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={skyTop} className="transition-all duration-700" />
+            <stop offset="100%" stopColor={skyBottom} className="transition-all duration-700" />
+          </linearGradient>
+          <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#132313" />
+            <stop offset="100%" stopColor="#0A160A" />
+          </linearGradient>
+          <linearGradient id="backwaterCanalGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={canalColors.stop0} className="transition-all duration-700" />
+            <stop offset="100%" stopColor={canalColors.stop1} className="transition-all duration-700" />
+          </linearGradient>
+          <linearGradient id="keralaSolarRoof" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#1E3A8A" />
+            <stop offset="100%" stopColor="#2563EB" />
+          </linearGradient>
+        </defs>
 
-      {/* Sky */}
-      <rect x="0" y="0" width="600" height="280" fill="url(#skyGrad)" className="transition-all duration-700" />
+        {/* Sky */}
+        <rect x="0" y="0" width="600" height="270" fill="url(#skyGrad)" className="transition-all duration-700" />
 
-      {/* Sun/Moon based on score */}
-      <circle
-        cx="520"
-        cy="60"
-        r={25 + score * 0.1}
-        fill={score > 40 ? '#FCD34D' : '#9CA3AF'}
-        opacity={0.8}
-        className="transition-all duration-700"
-      />
+        {/* Distant misty Western Ghats mountain silhouette */}
+        <path
+          d="M 0 250 Q 80 200 160 230 Q 240 180 340 225 Q 440 190 520 220 Q 560 210 600 235 L 600 270 L 0 270 Z"
+          fill="#1E293B"
+          opacity={0.35}
+          className="transition-all duration-700"
+        />
 
-      {/* Clouds - fewer with higher score */}
-      <g opacity={Math.max(0.1, 1 - score / 80)} className="transition-all duration-700">
-        <ellipse cx="120" cy="60" rx="40" ry="15" fill="#94A3B8" opacity={0.5} />
-        <ellipse cx="145" cy="55" rx="30" ry="12" fill="#94A3B8" opacity={0.5} />
-        <ellipse cx="350" cy="45" rx="35" ry="13" fill="#94A3B8" opacity={0.4} />
-        <ellipse cx="380" cy="40" rx="28" ry="10" fill="#94A3B8" opacity={0.4} />
-      </g>
+        {/* Sun/Moon based on score */}
+        <circle
+          cx="520"
+          cy="55"
+          r={24 + score * 0.08}
+          fill={score > 40 ? '#FCD34D' : '#9CA3AF'}
+          opacity={0.85}
+          className="transition-all duration-700"
+        />
 
-      {/* Ground */}
-      <rect x="0" y="280" width="600" height="120" fill="url(#groundGrad)" />
-
-      {/* Road */}
-      <rect x="0" y="310" width="600" height="30" fill="#374151" rx="2" />
-      <line x1="0" y1="325" x2="600" y2="325" stroke="#6B7280" strokeWidth="1" strokeDasharray="20 15" />
-
-      {/* ── Wind Turbines ── */}
-      {v.windTurbines > 0 && (
-        <g opacity={v.windTurbines} className="transition-all duration-500">
-          <rect x="50" y="160" width="4" height="120" fill="#D1D5DB" rx="1" />
-          <circle cx="52" cy="160" r="3" fill="#E5E7EB" />
-          <line x1="52" y1="160" x2="52" y2="125" stroke="#E5E7EB" strokeWidth="3" strokeLinecap="round" />
-          <line x1="52" y1="160" x2="78" y2="178" stroke="#E5E7EB" strokeWidth="3" strokeLinecap="round" />
-          <line x1="52" y1="160" x2="26" y2="178" stroke="#E5E7EB" strokeWidth="3" strokeLinecap="round" />
+        {/* Clouds - fewer with higher score */}
+        <g opacity={Math.max(0.1, 1 - score / 85)} className="transition-all duration-700">
+          <ellipse cx="120" cy="55" rx="38" ry="14" fill="#94A3B8" opacity={0.45} />
+          <ellipse cx="145" cy="50" rx="28" ry="11" fill="#94A3B8" opacity={0.45} />
+          <ellipse cx="360" cy="40" rx="35" ry="12" fill="#94A3B8" opacity={0.35} />
+          <ellipse cx="390" cy="36" rx="26" ry="10" fill="#94A3B8" opacity={0.35} />
         </g>
-      )}
-      {v.windTurbines > 0.3 && (
-        <g opacity={Math.min(1, (v.windTurbines - 0.3) * 2)} className="transition-all duration-500">
-          <rect x="90" y="175" width="3" height="105" fill="#D1D5DB" rx="1" />
-          <circle cx="91.5" cy="175" r="2.5" fill="#E5E7EB" />
-          <line x1="91.5" y1="175" x2="91.5" y2="145" stroke="#E5E7EB" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="91.5" y1="175" x2="113" y2="190" stroke="#E5E7EB" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="91.5" y1="175" x2="70" y2="190" stroke="#E5E7EB" strokeWidth="2.5" strokeLinecap="round" />
-        </g>
-      )}
 
-      {/* ── Building 1 (tall) ── */}
-      <g>
-        <rect x="150" y="180" width="60" height="130" fill="#1E293B" rx="2" />
-        {/* Windows */}
-        {[0, 1, 2, 3, 4, 5].map(row => (
-          <g key={`b1-row-${row}`}>
-            <rect x="158" y={190 + row * 20} width="8" height="10" fill="#FCD34D" opacity={0.6} rx="1" />
-            <rect x="172" y={190 + row * 20} width="8" height="10" fill="#FCD34D" opacity={0.5} rx="1" />
-            <rect x="186" y={190 + row * 20} width="8" height="10" fill="#FCD34D" opacity={0.7} rx="1" />
-            <rect x="198" y={190 + row * 20} width="8" height="10" fill="#FCD34D" opacity={0.4} rx="1" />
+        {/* ── Wind Turbines (Coastal & hill breeze arrays) ── */}
+        {v.windTurbines > 0 && (
+          <g opacity={v.windTurbines} className="transition-all duration-500">
+            <rect x="45" y="150" width="3.5" height="120" fill="#E2E8F0" rx="1" />
+            <circle cx="46.75" cy="150" r="3" fill="#F8FAFC" />
+            <line x1="46.75" y1="150" x2="46.75" y2="115" stroke="#F8FAFC" strokeWidth="2.8" strokeLinecap="round" />
+            <line x1="46.75" y1="150" x2="72" y2="168" stroke="#F8FAFC" strokeWidth="2.8" strokeLinecap="round" />
+            <line x1="46.75" y1="150" x2="22" y2="168" stroke="#F8FAFC" strokeWidth="2.8" strokeLinecap="round" />
           </g>
-        ))}
-        {/* Green Roof */}
-        <rect
-          x="148"
-          y="176"
-          width="64"
-          height="6"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-        {/* Solar panels */}
-        <g opacity={v.solarPanels} className="transition-all duration-500">
-          <rect x="155" y="170" width="15" height="8" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="174" y="170" width="15" height="8" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="193" y="170" width="15" height="8" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-        </g>
-      </g>
-
-      {/* ── Building 2 (medium) ── */}
-      <g>
-        <rect x="225" y="220" width="50" height="90" fill="#334155" rx="2" />
-        {[0, 1, 2, 3].map(row => (
-          <g key={`b2-row-${row}`}>
-            <rect x="232" y={228 + row * 20} width="7" height="10" fill="#FCD34D" opacity={0.5} rx="1" />
-            <rect x="244" y={228 + row * 20} width="7" height="10" fill="#FCD34D" opacity={0.7} rx="1" />
-            <rect x="256" y={228 + row * 20} width="7" height="10" fill="#FCD34D" opacity={0.4} rx="1" />
+        )}
+        {v.windTurbines > 0.35 && (
+          <g opacity={Math.min(1, (v.windTurbines - 0.35) * 2)} className="transition-all duration-500">
+            <rect x="85" y="165" width="3" height="105" fill="#CBD5E1" rx="1" />
+            <circle cx="86.5" cy="165" r="2.5" fill="#E2E8F0" />
+            <line x1="86.5" y1="165" x2="86.5" y2="135" stroke="#E2E8F0" strokeWidth="2.4" strokeLinecap="round" />
+            <line x1="86.5" y1="165" x2="108" y2="180" stroke="#E2E8F0" strokeWidth="2.4" strokeLinecap="round" />
+            <line x1="86.5" y1="165" x2="65" y2="180" stroke="#E2E8F0" strokeWidth="2.4" strokeLinecap="round" />
           </g>
-        ))}
-        <rect
-          x="223"
-          y="216"
-          width="54"
-          height="6"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-        <g opacity={v.solarPanels} className="transition-all duration-500">
-          <rect x="228" y="210" width="12" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="244" y="210" width="12" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="260" y="210" width="12" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-        </g>
-      </g>
+        )}
 
-      {/* ── Building 3 (short-wide) ── */}
-      <g>
-        <rect x="290" y="250" width="70" height="60" fill="#1E293B" rx="2" />
-        {[0, 1].map(row => (
-          <g key={`b3-row-${row}`}>
-            <rect x="298" y={258 + row * 22} width="8" height="12" fill="#FCD34D" opacity={0.6} rx="1" />
-            <rect x="314" y={258 + row * 22} width="8" height="12" fill="#FCD34D" opacity={0.5} rx="1" />
-            <rect x="330" y={258 + row * 22} width="8" height="12" fill="#FCD34D" opacity={0.7} rx="1" />
-            <rect x="346" y={258 + row * 22} width="8" height="12" fill="#FCD34D" opacity={0.4} rx="1" />
+        {/* ── Ground Base ── */}
+        <rect x="0" y="270" width="600" height="130" fill="url(#groundGrad)" />
+
+        {/* ── Building 1 (High-tech residential hub with sloped Kerala gable solar roof) ── */}
+        <g>
+          <rect x="145" y="180" width="65" height="90" fill="#1E293B" rx="2" />
+          {/* Windows */}
+          {[0, 1, 2, 3].map(row => (
+            <g key={`b1-row-${row}`}>
+              <rect x="154" y={192 + row * 18} width="9" height="10" fill="#FCD34D" opacity={0.65} rx="1" />
+              <rect x="168" y={192 + row * 18} width="9" height="10" fill="#FCD34D" opacity={0.5} rx="1" />
+              <rect x="182" y={192 + row * 18} width="9" height="10" fill="#FCD34D" opacity={0.7} rx="1" />
+              <rect x="195" y={192 + row * 18} width="9" height="10" fill="#FCD34D" opacity={0.45} rx="1" />
+            </g>
+          ))}
+          {/* Traditional-Modern Kerala Sloped Gable Roof with integrated CIAL-style Solar Arrays */}
+          <polygon points="140,180 177.5,155 215,180" fill="#0F172A" stroke="#334155" strokeWidth="1" />
+          <polygon
+            points="144,178 177.5,158 211,178"
+            fill="url(#keralaSolarRoof)"
+            opacity={Math.min(1, 0.2 + v.solarPanels * 0.8)}
+            className="transition-all duration-500"
+          />
+          {/* Solar cell gridlines */}
+          <g opacity={v.solarPanels} className="transition-all duration-500">
+            <line x1="160" y1="178" x2="177.5" y2="158" stroke="#60A5FA" strokeWidth="0.75" />
+            <line x1="195" y1="178" x2="177.5" y2="158" stroke="#60A5FA" strokeWidth="0.75" />
           </g>
-        ))}
-        <rect
-          x="288"
-          y="246"
-          width="74"
-          height="6"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-        <g opacity={v.solarPanels * 0.8} className="transition-all duration-500">
-          <rect x="295" y="240" width="18" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="318" y="240" width="18" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="341" y="240" width="18" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
+          {/* Vertical bio-garden strip */}
+          <rect x="142" y="195" width="3" height="70" fill="#10B981" opacity={v.greenRoofs} />
         </g>
-      </g>
 
-      {/* ── Building 4 (skyscraper) ── */}
-      <g>
-        <rect x="380" y="150" width="45" height="160" fill="#334155" rx="2" />
-        {[0, 1, 2, 3, 4, 5, 6].map(row => (
-          <g key={`b4-row-${row}`}>
-            <rect x="386" y={158 + row * 20} width="6" height="10" fill="#FCD34D" opacity={0.5} rx="1" />
-            <rect x="396" y={158 + row * 20} width="6" height="10" fill="#FCD34D" opacity={0.7} rx="1" />
-            <rect x="406" y={158 + row * 20} width="6" height="10" fill="#FCD34D" opacity={0.4} rx="1" />
-            <rect x="416" y={158 + row * 20} width="6" height="10" fill="#FCD34D" opacity={0.6} rx="1" />
+        {/* ── Building 2 (Medium R&D Facility) ── */}
+        <g>
+          <rect x="225" y="215" width="50" height="55" fill="#334155" rx="2" />
+          {[0, 1].map(row => (
+            <g key={`b2-row-${row}`}>
+              <rect x="233" y={226 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.6} rx="1" />
+              <rect x="246" y={226 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.75} rx="1" />
+              <rect x="259" y={226 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.4} rx="1" />
+            </g>
+          ))}
+          {/* Green Roof Canopy */}
+          <rect x="222" y="210" width="56" height="6" fill="#059669" rx="2" opacity={v.greenRoofs} />
+          {/* Flat rooftop solar mounts */}
+          <g opacity={v.solarPanels * 0.9} className="transition-all duration-500">
+            <rect x="228" y="204" width="12" height="6" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
+            <rect x="244" y="204" width="12" height="6" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
+            <rect x="260" y="204" width="12" height="6" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
           </g>
-        ))}
-        <rect
-          x="378"
-          y="146"
-          width="49"
-          height="6"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-        <g opacity={v.solarPanels} className="transition-all duration-500">
-          <rect x="382" y="139" width="10" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="396" y="139" width="10" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="410" y="139" width="10" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
         </g>
-      </g>
 
-      {/* ── Building 5 (medium-right) ── */}
-      <g>
-        <rect x="440" y="230" width="55" height="80" fill="#1E293B" rx="2" />
-        {[0, 1, 2].map(row => (
-          <g key={`b5-row-${row}`}>
-            <rect x="448" y={238 + row * 22} width="7" height="12" fill="#FCD34D" opacity={0.6} rx="1" />
-            <rect x="462" y={238 + row * 22} width="7" height="12" fill="#FCD34D" opacity={0.5} rx="1" />
-            <rect x="476" y={238 + row * 22} width="7" height="12" fill="#FCD34D" opacity={0.7} rx="1" />
+        {/* ── Building 3 (Circular Waste & Material Recovery Center) ── */}
+        <g>
+          <rect x="290" y="235" width="70" height="35" fill="#1E293B" rx="2" />
+          <rect x="300" y="244" width="12" height="12" fill="#FCD34D" opacity={0.5} rx="1" />
+          <rect x="320" y="244" width="12" height="12" fill="#FCD34D" opacity={0.7} rx="1" />
+          <rect x="340" y="244" width="12" height="12" fill="#FCD34D" opacity={0.5} rx="1" />
+          {/* Sloped solar overhang */}
+          <polygon points="287,235 325,223 363,235" fill="url(#keralaSolarRoof)" opacity={v.solarPanels} />
+          {/* Circular recycling logo */}
+          <circle cx="325" cy="250" r="5" fill="none" stroke="#22C55E" strokeWidth="1.2" opacity={v.recyclingBins} />
+        </g>
+
+        {/* ── Building 4 (Tower with Vertical Forest) ── */}
+        <g>
+          <rect x="375" y="145" width="48" height="125" fill="#334155" rx="2" />
+          {[0, 1, 2, 3, 4, 5].map(row => (
+            <g key={`b4-row-${row}`}>
+              <rect x="382" y={155 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.5} rx="1" />
+              <rect x="395" y={155 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.7} rx="1" />
+              <rect x="408" y={155 + row * 18} width="7" height="9" fill="#FCD34D" opacity={0.5} rx="1" />
+            </g>
+          ))}
+          {/* Rooftop garden & solar */}
+          <rect x="373" y="140" width="52" height="6" fill="#059669" rx="2" opacity={v.greenRoofs} />
+          <g opacity={v.solarPanels} className="transition-all duration-500">
+            <rect x="378" y="133" width="11" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
+            <rect x="393" y="133" width="11" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
+            <rect x="408" y="133" width="11" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
           </g>
-        ))}
-        <rect
-          x="438"
-          y="226"
-          width="59"
-          height="6"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-        <g opacity={v.solarPanels * 0.7} className="transition-all duration-500">
-          <rect x="443" y="220" width="14" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="461" y="220" width="14" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
-          <rect x="479" y="220" width="14" height="7" fill="#2563EB" rx="1" stroke="#1D4ED8" strokeWidth="0.5" />
         </g>
-      </g>
 
-      {/* ── Small building (left) ── */}
-      <g>
-        <rect x="120" y="265" width="30" height="45" fill="#334155" rx="2" />
-        <rect x="124" y="272" width="5" height="8" fill="#FCD34D" opacity={0.5} rx="1" />
-        <rect x="134" y="272" width="5" height="8" fill="#FCD34D" opacity={0.6} rx="1" />
-        <rect x="124" y="286" width="5" height="8" fill="#FCD34D" opacity={0.4} rx="1" />
-        <rect x="134" y="286" width="5" height="8" fill="#FCD34D" opacity={0.7} rx="1" />
-        <rect
-          x="118"
-          y="261"
-          width="34"
-          height="5"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-      </g>
+        {/* ── Building 5 (Medium commercial & civic hub) ── */}
+        <g>
+          <rect x="440" y="210" width="60" height="60" fill="#1E293B" rx="2" />
+          {[0, 1].map(row => (
+            <g key={`b5-row-${row}`}>
+              <rect x="450" y={222 + row * 18} width="8" height="10" fill="#FCD34D" opacity={0.6} rx="1" />
+              <rect x="466" y={222 + row * 18} width="8" height="10" fill="#FCD34D" opacity={0.5} rx="1" />
+              <rect x="482" y={222 + row * 18} width="8" height="10" fill="#FCD34D" opacity={0.7} rx="1" />
+            </g>
+          ))}
+          {/* Sloped Kerala roof style */}
+          <polygon points="436,210 470,195 504,210" fill="url(#keralaSolarRoof)" opacity={Math.min(1, 0.2 + v.solarPanels * 0.8)} />
+        </g>
 
-      {/* ── Small building (far right) ── */}
-      <g>
-        <rect x="510" y="260" width="35" height="50" fill="#1E293B" rx="2" />
-        <rect x="516" y="268" width="6" height="8" fill="#FCD34D" opacity={0.5} rx="1" />
-        <rect x="528" y="268" width="6" height="8" fill="#FCD34D" opacity={0.6} rx="1" />
-        <rect x="516" y="282" width="6" height="8" fill="#FCD34D" opacity={0.4} rx="1" />
-        <rect x="528" y="282" width="6" height="8" fill="#FCD34D" opacity={0.7} rx="1" />
-        <rect
-          x="508"
-          y="256"
-          width="39"
-          height="5"
-          fill="#059669"
-          rx="2"
-          opacity={v.greenRoofs}
-          className="transition-all duration-500"
-        />
-      </g>
+        {/* ── Urban Transit Boulevard (Road + Clean Electric Tram corridor) ── */}
+        <rect x="0" y="285" width="600" height="28" fill="#1F2937" />
+        <line x1="0" y1="299" x2="600" y2="299" stroke="#4B5563" strokeWidth="1" strokeDasharray="16 12" />
 
-      {/* ── Trees ── */}
-      <g className="transition-all duration-500">
-        {/* Tree cluster left of buildings */}
-        <g opacity={Math.min(1, v.trees * 1.5)}>
-          <rect x="133" y="295" width="3" height="15" fill="#78350F" />
-          <ellipse cx="134.5" cy="290" rx="8" ry="10" fill="#059669" />
+        {/* Electric Tram Rails & Overhead catenary lines */}
+        <g opacity={Math.min(1, v.buses * 1.3)} className="transition-all duration-500">
+          <line x1="0" y1="287" x2="600" y2="287" stroke="#94A3B8" strokeWidth="0.75" />
+          <line x1="0" y1="291" x2="600" y2="291" stroke="#94A3B8" strokeWidth="0.75" />
+          {/* Modern Zero-Emission Light Tram */}
+          <rect x="360" y="282" width="65" height="13" fill="#059669" rx="2.5" />
+          <rect x="364" y="284" width="12" height="6" fill="#E2E8F0" rx="1" />
+          <rect x="380" y="284" width="14" height="6" fill="#E2E8F0" rx="1" />
+          <rect x="398" y="284" width="14" height="6" fill="#E2E8F0" rx="1" />
+          <rect x="415" y="284" width="7" height="6" fill="#E2E8F0" rx="1" />
+          {/* Pantograph contact on tram */}
+          <line x1="390" y1="282" x2="395" y2="276" stroke="#D4FF00" strokeWidth="1.2" />
         </g>
-        <g opacity={Math.min(1, v.trees * 1.3)}>
-          <rect x="113" y="298" width="3" height="12" fill="#78350F" />
-          <ellipse cx="114.5" cy="294" rx="7" ry="8" fill="#10B981" />
+
+        {/* Active Cyclists */}
+        <g className="transition-all duration-500">
+          <g opacity={v.bikes}>
+            <circle cx="180" cy="305" r="3.5" fill="none" stroke="#D4FF00" strokeWidth="1.2" />
+            <circle cx="189" cy="305" r="3.5" fill="none" stroke="#D4FF00" strokeWidth="1.2" />
+            <line x1="180" y1="305" x2="185" y2="299" stroke="#D4FF00" strokeWidth="1.2" />
+            <line x1="185" y1="299" x2="189" y2="305" stroke="#D4FF00" strokeWidth="1.2" />
+          </g>
+          {v.bikes > 0.4 && (
+            <g opacity={(v.bikes - 0.4) * 1.6}>
+              <circle cx="490" cy="305" r="3.5" fill="none" stroke="#A3E635" strokeWidth="1.2" />
+              <circle cx="499" cy="305" r="3.5" fill="none" stroke="#A3E635" strokeWidth="1.2" />
+              <line x1="490" y1="305" x2="495" y2="299" stroke="#A3E635" strokeWidth="1.2" />
+              <line x1="495" y1="299" x2="499" y2="305" stroke="#A3E635" strokeWidth="1.2" />
+            </g>
+          )}
         </g>
-        {/* Trees between buildings */}
-        <g opacity={v.trees}>
-          <rect x="217" y="297" width="3" height="13" fill="#78350F" />
-          <ellipse cx="218.5" cy="292" rx="7" ry="9" fill="#059669" />
+
+        {/* ── KERALA 2040 BACKWATER CANAL (Vembanad / Kochi Water Corridor) ── */}
+        {/* Canal banks */}
+        <rect x="0" y="328" width="600" height="48" fill="url(#backwaterCanalGrad)" className="transition-all duration-700" />
+        {/* Granite stone promenade edge (Kallu kettu) */}
+        <line x1="0" y1="328" x2="600" y2="328" stroke="#334155" strokeWidth="2.5" />
+        <line x1="0" y1="376" x2="600" y2="376" stroke="#1E293B" strokeWidth="2" />
+
+        {/* Gentle water ripples (opacity increases as water clears) */}
+        <g opacity={Math.min(0.7, 0.15 + v.waterFeatures * 0.55)} className="transition-all duration-700">
+          <path d="M 30 338 Q 60 335 90 338 T 150 338" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.6} />
+          <path d="M 220 348 Q 255 345 290 348 T 360 348" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.5} />
+          <path d="M 420 340 Q 450 337 480 340 T 540 340" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.6} />
+          <path d="M 120 362 Q 160 359 200 362 T 280 362" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.4} />
+          <path d="M 380 364 Q 420 361 460 364 T 530 364" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.5} />
         </g>
-        <g opacity={Math.min(1, v.trees * 1.2)}>
-          <rect x="365" y="298" width="3" height="12" fill="#78350F" />
-          <ellipse cx="366.5" cy="293" rx="6" ry="8" fill="#10B981" />
+
+        {/* ── KOCHI-STYLE SOLAR ELECTRIC WATER METRO CATAMARAN ── */}
+        <g opacity={Math.min(1, 0.4 + v.buses * 0.8)} className="transition-all duration-700">
+          {/* E-Boat hull */}
+          <path
+            d="M 230 354 L 275 354 Q 285 354 290 350 L 295 345 L 225 345 Z"
+            fill="#F8FAFC"
+            stroke="#0F766E"
+            strokeWidth="1"
+          />
+          {/* Emerald accent waterline stripe */}
+          <line x1="227" y1="352" x2="284" y2="352" stroke="#10B981" strokeWidth="1.5" />
+          {/* Cabin & windows */}
+          <rect x="236" y="338" width="44" height="7" fill="#0F172A" rx="1.5" />
+          <rect x="240" y="340" width="8" height="3.5" fill="#38BDF8" rx="0.5" />
+          <rect x="252" y="340" width="8" height="3.5" fill="#38BDF8" rx="0.5" />
+          <rect x="264" y="340" width="8" height="3.5" fill="#38BDF8" rx="0.5" />
+          {/* Rooftop solar canopy on boat */}
+          <rect x="234" y="336" width="48" height="2" fill="#2563EB" />
+          {/* Zero-emission wake ripple */}
+          <path d="M 223 353 Q 212 355 200 354" fill="none" stroke="#99F6E4" strokeWidth="1" opacity={0.6} />
         </g>
-        {/* Trees right side */}
-        <g opacity={v.trees}>
-          <rect x="498" y="296" width="3" height="14" fill="#78350F" />
-          <ellipse cx="499.5" cy="291" rx="8" ry="10" fill="#059669" />
-        </g>
-        {/* Extra trees that appear at higher coverage */}
-        {v.trees > 0.3 && (
+
+        {/* ── KERALA COCONUT PALMS (Kera canopy scaling with Green Coverage) ── */}
+        <CoconutPalm x={35} y={328} scale={0.85 + v.trees * 0.25} opacity={Math.min(1, 0.4 + v.trees * 0.8)} />
+        <CoconutPalm x={95} y={328} scale={0.75 + v.trees * 0.3} opacity={Math.min(1, 0.3 + v.trees * 0.9)} />
+        {v.trees > 0.25 && (
+          <CoconutPalm x={280} y={328} scale={0.7 + v.trees * 0.3} opacity={(v.trees - 0.25) * 1.4} />
+        )}
+        {v.trees > 0.45 && (
+          <CoconutPalm x={430} y={328} scale={0.8 + v.trees * 0.25} opacity={(v.trees - 0.45) * 1.8} />
+        )}
+        {v.trees > 0.65 && (
           <>
-            <g opacity={(v.trees - 0.3) * 1.5}>
-              <rect x="555" y="296" width="3" height="14" fill="#78350F" />
-              <ellipse cx="556.5" cy="291" rx="7" ry="9" fill="#34D399" />
-            </g>
-            <g opacity={(v.trees - 0.3) * 1.5}>
-              <rect x="100" y="300" width="2" height="10" fill="#78350F" />
-              <ellipse cx="101" cy="296" rx="5" ry="7" fill="#34D399" />
-            </g>
+            <CoconutPalm x={515} y={328} scale={0.75 + v.trees * 0.25} opacity={(v.trees - 0.65) * 2.5} />
+            <CoconutPalm x={565} y={328} scale={0.85 + v.trees * 0.2} opacity={(v.trees - 0.65) * 2.5} />
           </>
         )}
-        {v.trees > 0.5 && (
-          <>
-            <g opacity={(v.trees - 0.5) * 2}>
-              <rect x="278" y="298" width="3" height="12" fill="#78350F" />
-              <ellipse cx="279.5" cy="293" rx="6" ry="8" fill="#059669" />
-            </g>
-            <g opacity={(v.trees - 0.5) * 2}>
-              <rect x="430" y="297" width="3" height="13" fill="#78350F" />
-              <ellipse cx="431.5" cy="292" rx="7" ry="9" fill="#10B981" />
-            </g>
-          </>
-        )}
-        {v.trees > 0.7 && (
-          <>
-            <g opacity={(v.trees - 0.7) * 3}>
-              <rect x="573" y="298" width="2" height="12" fill="#78350F" />
-              <ellipse cx="574" cy="294" rx="6" ry="7" fill="#059669" />
-            </g>
-            <g opacity={(v.trees - 0.7) * 3}>
-              <rect x="75" y="300" width="2" height="10" fill="#78350F" />
-              <ellipse cx="76" cy="296" rx="5" ry="7" fill="#34D399" />
-            </g>
-          </>
-        )}
-      </g>
 
-      {/* ── Bikes on the road ── */}
-      <g className="transition-all duration-500">
-        <g opacity={v.bikes}>
-          <circle cx="200" cy="322" r="4" fill="none" stroke="#84CC16" strokeWidth="1.5" />
-          <circle cx="210" cy="322" r="4" fill="none" stroke="#84CC16" strokeWidth="1.5" />
-          <line x1="200" y1="322" x2="205" y2="316" stroke="#84CC16" strokeWidth="1.5" />
-          <line x1="205" y1="316" x2="210" y2="322" stroke="#84CC16" strokeWidth="1.5" />
-          <line x1="205" y1="316" x2="205" y2="313" stroke="#84CC16" strokeWidth="1" />
+        {/* ── Standard Shrubbery & Native Bio-Belts ── */}
+        <g className="transition-all duration-500">
+          <ellipse cx="60" cy="388" rx="35" ry="6" fill="#047857" opacity={0.4} />
+          <ellipse cx="180" cy="392" rx="30" ry="5" fill="#047857" opacity={0.35} />
+          <ellipse cx="460" cy="390" rx="40" ry="6" fill="#047857" opacity={0.4} />
+          <ellipse cx="560" cy="393" rx="25" ry="5" fill="#047857" opacity={0.35} />
         </g>
-        {v.bikes > 0.3 && (
-          <g opacity={(v.bikes - 0.3) * 1.5}>
-            <circle cx="340" cy="322" r="4" fill="none" stroke="#A3E635" strokeWidth="1.5" />
-            <circle cx="350" cy="322" r="4" fill="none" stroke="#A3E635" strokeWidth="1.5" />
-            <line x1="340" y1="322" x2="345" y2="316" stroke="#A3E635" strokeWidth="1.5" />
-            <line x1="345" y1="316" x2="350" y2="322" stroke="#A3E635" strokeWidth="1.5" />
-            <line x1="345" y1="316" x2="345" y2="313" stroke="#A3E635" strokeWidth="1" />
-          </g>
-        )}
-        {v.bikes > 0.6 && (
-          <g opacity={(v.bikes - 0.6) * 2.5}>
-            <circle cx="470" cy="322" r="4" fill="none" stroke="#84CC16" strokeWidth="1.5" />
-            <circle cx="480" cy="322" r="4" fill="none" stroke="#84CC16" strokeWidth="1.5" />
-            <line x1="470" y1="322" x2="475" y2="316" stroke="#84CC16" strokeWidth="1.5" />
-            <line x1="475" y1="316" x2="480" y2="322" stroke="#84CC16" strokeWidth="1.5" />
-            <line x1="475" y1="316" x2="475" y2="313" stroke="#84CC16" strokeWidth="1" />
-          </g>
-        )}
-      </g>
 
-      {/* ── Water Features ── */}
-      <g className="transition-all duration-500">
-        {v.waterFeatures > 0 && (
-          <g opacity={v.waterFeatures}>
-            <ellipse cx="80" cy="365" rx="30" ry="8" fill="url(#waterGrad)" opacity={0.7} />
-            <ellipse cx="80" cy="363" rx="26" ry="5" fill="#38BDF8" opacity={0.3} />
+        {/* ── Waste Circularity Nodes (Smart Sorting Stations) ── */}
+        <g className="transition-all duration-500">
+          <g opacity={Math.min(1, v.recyclingBins * 1.4)}>
+            <rect x="135" y="318" width="5" height="7" fill="#22C55E" rx="1" />
+            <rect x="142" y="318" width="5" height="7" fill="#3B82F6" rx="1" />
           </g>
-        )}
-        {v.waterFeatures > 0.4 && (
-          <g opacity={(v.waterFeatures - 0.4) * 1.7}>
-            <ellipse cx="530" cy="370" rx="25" ry="7" fill="url(#waterGrad)" opacity={0.7} />
-            <ellipse cx="530" cy="368" rx="21" ry="4" fill="#38BDF8" opacity={0.3} />
-          </g>
-        )}
-      </g>
+          {v.recyclingBins > 0.4 && (
+            <g opacity={(v.recyclingBins - 0.4) * 1.8}>
+              <rect x="470" y="318" width="5" height="7" fill="#22C55E" rx="1" />
+              <rect x="477" y="318" width="5" height="7" fill="#EAB308" rx="1" />
+            </g>
+          )}
+        </g>
+      </svg>
 
-      {/* ── Recycling Bins ── */}
-      <g className="transition-all duration-500">
-        {v.recyclingBins > 0 && (
-          <g opacity={v.recyclingBins}>
-            <rect x="243" y="340" width="6" height="8" fill="#22C55E" rx="1" />
-            <rect x="242" y="338" width="8" height="3" fill="#16A34A" rx="1" />
-          </g>
-        )}
-        {v.recyclingBins > 0.3 && (
-          <g opacity={(v.recyclingBins - 0.3) * 1.5}>
-            <rect x="383" y="340" width="6" height="8" fill="#3B82F6" rx="1" />
-            <rect x="382" y="338" width="8" height="3" fill="#2563EB" rx="1" />
-          </g>
-        )}
-        {v.recyclingBins > 0.5 && (
-          <g opacity={(v.recyclingBins - 0.5) * 2}>
-            <rect x="163" y="340" width="6" height="8" fill="#EAB308" rx="1" />
-            <rect x="162" y="338" width="8" height="3" fill="#CA8A04" rx="1" />
-          </g>
-        )}
-        {v.recyclingBins > 0.7 && (
-          <g opacity={(v.recyclingBins - 0.7) * 3.3}>
-            <rect x="503" y="340" width="6" height="8" fill="#22C55E" rx="1" />
-            <rect x="502" y="338" width="8" height="3" fill="#16A34A" rx="1" />
-          </g>
-        )}
-      </g>
-
-      {/* ── Foreground grass patches ── */}
-      <g opacity={Math.min(1, 0.3 + v.trees * 0.7)} className="transition-all duration-500">
-        <ellipse cx="60" cy="385" rx="40" ry="6" fill="#065F46" opacity={0.4} />
-        <ellipse cx="180" cy="390" rx="35" ry="5" fill="#065F46" opacity={0.3} />
-        <ellipse cx="450" cy="388" rx="45" ry="6" fill="#065F46" opacity={0.35} />
-        <ellipse cx="560" cy="392" rx="30" ry="5" fill="#065F46" opacity={0.3} />
-      </g>
-    </svg>
+      {/* Subtle Kerala 2040 Tech Badge overlay */}
+      <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-white/10 bg-[#0A1F0A]/80 px-2.5 py-1 text-[10px] font-mono backdrop-blur-md">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#D4FF00] animate-pulse" />
+        <span className="text-[#A3E635] font-semibold">KERALA 2040 MODEL</span>
+        <span className="text-white/40 hidden sm:inline">• Water Metro & CIAL Solar Grid</span>
+      </div>
+    </div>
   );
 }
 
@@ -600,15 +559,26 @@ function SustainabilityGauge({ score }: { score: number }) {
           >
             {score}
           </span>
-          <span className="text-xs text-[#E8E5E0] transition-colors duration-500">{label}</span>
+          <span className="text-[10px] text-[#E8E5E0]/60 uppercase tracking-wider">/ 100</span>
         </div>
       </div>
+      <span
+        className="px-3 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-500"
+        style={{
+          color,
+          backgroundColor: `${color}18`,
+          borderColor: `${color}40`,
+          borderWidth: 1,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PARAMETER SLIDER
+   PARAM SLIDER
    ═══════════════════════════════════════════════════════════ */
 
 function ParamSlider({
@@ -618,16 +588,20 @@ function ParamSlider({
 }: {
   config: SliderConfig;
   value: number;
-  onChange: (key: keyof CityParameters, value: number) => void;
+  onChange: (key: keyof CityParameters, val: number) => void;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label htmlFor={`slider-${config.key}`} className="flex items-center gap-2 text-sm font-medium text-[#E8E5E0]">
+        <div className="flex items-center gap-2">
           {config.icon}
-          {config.label}
-        </label>
-        <span className="text-sm font-bold tabular-nums text-[#A3E635]">{value}%</span>
+          <label htmlFor={`slider-${config.key}`} className="text-sm font-medium text-[#F5F5F0]">
+            {config.label}
+          </label>
+        </div>
+        <span className="text-sm font-mono font-semibold text-[#A3E635] tabular-nums">
+          {value}%
+        </span>
       </div>
       <input
         id={`slider-${config.key}`}
@@ -636,7 +610,7 @@ function ParamSlider({
         max={100}
         value={value}
         onChange={e => onChange(config.key, Number(e.target.value))}
-        className="city-slider w-full h-2 rounded-full appearance-none cursor-pointer bg-[#1a2e1a] outline-none focus-visible:ring-2 focus-visible:ring-[#A3E635] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1B0D]"
+        className="w-full accent-[#84CC16] bg-[#1a2e1a] h-2 rounded-lg cursor-pointer"
         aria-label={`${config.label}: ${value}%`}
       />
     </div>
@@ -659,18 +633,22 @@ function IndicatorCard({
   const color = getScoreColor(value);
 
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 backdrop-blur-sm">
-      <div className="flex items-baseline justify-between mb-2">
+    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 backdrop-blur-sm">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium text-[#E8E5E0]/70">{label}</span>
-        <span className="text-lg font-bold tabular-nums" style={{ color }}>
+        <span className="text-sm font-mono font-bold tabular-nums" style={{ color }}>
           {value}
-          <span className="text-xs font-normal text-[#E8E5E0]/50">{unit}</span>
+          <span className="text-xs text-[#E8E5E0]/40 ml-0.5">{unit}</span>
         </span>
       </div>
-      <div className="h-2 w-full rounded-full bg-[#1a2e1a] overflow-hidden">
+      {/* Mini bar */}
+      <div className="h-1.5 w-full bg-[#1a2e1a] rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${value}%`, backgroundColor: color }}
+          style={{
+            width: `${Math.min(100, value)}%`,
+            backgroundColor: color,
+          }}
         />
       </div>
     </div>
@@ -688,164 +666,113 @@ function ComparisonView({
   baseline: SimulationResult;
   current: SimulationResult;
 }) {
-  const comparisons: { label: string; baselineKey: keyof SimulationResult['indicators']; }[] = [
-    { label: 'CO₂ Reduction', baselineKey: 'co2ReductionPercent' },
-    { label: 'Air Quality', baselineKey: 'airQualityIndex' },
-    { label: 'Biodiversity', baselineKey: 'biodiversityScore' },
-    { label: 'Livability', baselineKey: 'livabilityScore' },
-    { label: 'Resource Efficiency', baselineKey: 'resourceEfficiency' },
-    { label: 'Climate Resilience', baselineKey: 'climateResilience' },
-  ];
+  const delta = current.sustainabilityIndex - baseline.sustainabilityIndex;
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 backdrop-blur-sm">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-sm font-semibold text-[#E8E5E0]">Comparison</h4>
-        <div className="flex items-center gap-4 text-xs text-[#E8E5E0]/60">
-          <span className="flex items-center gap-1">
-            <span className="inline-block w-3 h-3 rounded-sm bg-[#6B7280]" /> Baseline
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="inline-block w-3 h-3 rounded-sm bg-[#A3E635]" /> Your City
-          </span>
-        </div>
+        <h4 className="text-sm font-semibold text-[#A3E635] uppercase tracking-wider">
+          Baseline vs. Current Simulation
+        </h4>
+        <span
+          className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
+            delta >= 0
+              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+          }`}
+        >
+          {delta >= 0 ? `+${delta}` : delta} pts
+        </span>
       </div>
-      <div className="space-y-4">
-        {comparisons.map(({ label, baselineKey }) => {
-          const bVal = baseline.indicators[baselineKey];
-          const cVal = current.indicators[baselineKey];
-          const delta = cVal - bVal;
-          const sign = delta > 0 ? '+' : '';
-          const deltaColor = delta > 0 ? '#10B981' : delta < 0 ? '#EF4444' : '#6B7280';
+
+      <div className="space-y-3">
+        {INDICATORS.map(({ key, label }) => {
+          const bVal = baseline.indicators[key];
+          const cVal = current.indicators[key];
+          const diff = cVal - bVal;
 
           return (
-            <div key={baselineKey}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-[#E8E5E0]/70">{label}</span>
-                <span
-                  className="text-xs font-bold tabular-nums"
-                  style={{ color: deltaColor }}
-                >
-                  {sign}{delta}
+            <div key={key} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-[#E8E5E0]/60">{label}</span>
+                <span className="font-mono text-xs">
+                  <span className="text-[#E8E5E0]/40">{bVal}</span>
+                  <span className="text-[#E8E5E0]/30 mx-1">→</span>
+                  <span className="font-bold text-[#F5F5F0]">{cVal}</span>
+                  <span
+                    className={`ml-1.5 text-[10px] ${
+                      diff >= 0 ? 'text-emerald-400' : 'text-red-400'
+                    }`}
+                  >
+                    ({diff >= 0 ? `+${diff}` : diff})
+                  </span>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 rounded-full bg-[#1a2e1a] overflow-hidden">
+              <div className="flex gap-1 h-1.5">
+                <div className="w-1/2 bg-[#1a2e1a] rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#6B7280] transition-all duration-500"
+                    className="h-full bg-slate-500 transition-all duration-300 rounded-full"
                     style={{ width: `${bVal}%` }}
                   />
                 </div>
-                <div className="flex-1 h-2 rounded-full bg-[#1a2e1a] overflow-hidden">
+                <div className="w-1/2 bg-[#1a2e1a] rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#A3E635] transition-all duration-500"
+                    className="h-full bg-[#10B981] transition-all duration-300 rounded-full"
                     style={{ width: `${cVal}%` }}
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-0.5">
-                <span className="text-[10px] tabular-nums text-[#6B7280]">{bVal}</span>
-                <span className="text-[10px] tabular-nums text-[#A3E635]/80">{cVal}</span>
-              </div>
             </div>
           );
         })}
-      </div>
-      {/* Overall index comparison */}
-      <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between">
-        <span className="text-sm font-semibold text-[#E8E5E0]">Overall Index</span>
-        <div className="flex items-center gap-3">
-          <span className="text-sm tabular-nums text-[#6B7280]">{baseline.sustainabilityIndex}</span>
-          <span className="text-sm font-bold" style={{ color: '#A3E635' }}>→</span>
-          <span
-            className="text-lg font-bold tabular-nums"
-            style={{ color: getScoreColor(current.sustainabilityIndex) }}
-          >
-            {current.sustainabilityIndex}
-          </span>
-        </div>
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SLIDER CSS (injected inline)
-   ═══════════════════════════════════════════════════════════ */
-
-const SLIDER_STYLES = `
-  .city-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #A3E635;
-    cursor: pointer;
-    border: 2px solid #0D1B0D;
-    box-shadow: 0 0 6px rgba(163,230,53,0.4);
-    transition: box-shadow 0.2s;
-  }
-  .city-slider::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 12px rgba(163,230,53,0.7);
-  }
-  .city-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #A3E635;
-    cursor: pointer;
-    border: 2px solid #0D1B0D;
-    box-shadow: 0 0 6px rgba(163,230,53,0.4);
-    transition: box-shadow 0.2s;
-  }
-  .city-slider::-moz-range-thumb:hover {
-    box-shadow: 0 0 12px rgba(163,230,53,0.7);
-  }
-  .city-slider::-webkit-slider-runnable-track {
-    background: linear-gradient(to right, #059669, #A3E635);
-    height: 8px;
-    border-radius: 9999px;
-  }
-  .city-slider::-moz-range-track {
-    background: linear-gradient(to right, #059669, #A3E635);
-    height: 8px;
-    border-radius: 9999px;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .city-slider::-webkit-slider-thumb,
-    .city-slider::-moz-range-thumb {
-      transition: none;
-    }
-  }
-`;
-
-/* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 
 export default function CityLab() {
-  const [params, setParams] = useState<CityParameters>({ ...DEFAULT_PARAMS });
+  const {
+    baseParams,
+    updateParam,
+    setBaseParams,
+    activePreset,
+    setActivePreset,
+    resetToDefaults,
+    simulation,
+    baseSimulation,
+    copyShareUrl,
+    hasSharedState,
+    actionBoosts,
+  } = useCity();
+
   const [compareMode, setCompareMode] = useState(false);
-  const [activePreset, setActivePreset] = useState<string | null>('current');
+  const [copied, setCopied] = useState(false);
 
-  const simulation = useMemo(() => calculateSimulation(params), [params]);
-  const baseline = useMemo(() => calculateSimulation(DEFAULT_PARAMS), []);
+  // Check if any citizen action boosts are active
+  const hasActionBoosts = useMemo(() => {
+    return Object.values(actionBoosts).some(v => v > 0);
+  }, [actionBoosts]);
 
-  const handleSliderChange = useCallback((key: keyof CityParameters, value: number) => {
-    setParams(prev => ({ ...prev, [key]: value }));
-    setActivePreset(null);
-  }, []);
+  const handleSliderChange = useCallback((key: keyof CityParameters, val: number) => {
+    updateParam(key, val);
+  }, [updateParam]);
 
   const handlePreset = useCallback((presetKey: string) => {
-    setParams({ ...PRESETS[presetKey].params });
+    setBaseParams({ ...PRESETS[presetKey].params });
     setActivePreset(presetKey);
-  }, []);
+  }, [setBaseParams, setActivePreset]);
 
-  const handleReset = useCallback(() => {
-    setParams({ ...DEFAULT_PARAMS });
-    setActivePreset('current');
-  }, []);
+  const handleShare = async () => {
+    const success = await copyShareUrl();
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2600);
+    }
+  };
 
   return (
     <section
@@ -853,9 +780,6 @@ export default function CityLab() {
       className="relative w-full overflow-hidden"
       style={{ backgroundColor: '#0D1B0D' }}
     >
-      {/* Inject slider styles */}
-      <style dangerouslySetInnerHTML={{ __html: SLIDER_STYLES }} />
-
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         {/* ── Header ── */}
         <motion.header
@@ -865,6 +789,9 @@ export default function CityLab() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
         >
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#D4FF00]/30 bg-[#0A1F0A] px-3.5 py-1 text-xs font-mono text-[#D4FF00] uppercase tracking-wider mb-4">
+            Interactive Urban Simulator
+          </div>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-[#F5F5F0] mb-4">
             Future City{' '}
             <span className="bg-gradient-to-r from-[#059669] via-[#10B981] to-[#A3E635] bg-clip-text text-transparent">
@@ -872,11 +799,17 @@ export default function CityLab() {
             </span>
           </h2>
           <p className="text-lg text-[#E8E5E0]/70 max-w-2xl mx-auto mb-2">
-            Design your sustainable city. Adjust parameters and watch the impact unfold.
+            Design your sustainable city. Adjust parameters and watch real-time urban visual dynamics transform.
           </p>
           <p className="text-xs text-[#E8E5E0]/40 max-w-xl mx-auto">
-            All simulation figures are illustrative and do not represent actual environmental measurements.
+            All simulation figures are illustrative models designed for educational analysis and do not represent actual environmental measurements.
           </p>
+
+          {hasSharedState && (
+            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-xs font-mono text-[#34D399]">
+              <span>🔗 Custom city configuration loaded via shared URL</span>
+            </div>
+          )}
         </motion.header>
 
         {/* ── Main Layout ── */}
@@ -891,9 +824,16 @@ export default function CityLab() {
           >
             {/* Controls Card */}
             <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6 backdrop-blur-sm">
-              <h3 className="text-sm font-semibold text-[#A3E635] uppercase tracking-wider mb-5">
-                City Parameters
-              </h3>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-semibold text-[#A3E635] uppercase tracking-wider">
+                  City Parameters
+                </h3>
+                {hasActionBoosts && (
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#10B981]/20 border border-[#10B981]/40 text-[#34D399]">
+                    +Citizen Action Boost Active
+                  </span>
+                )}
+              </div>
 
               {/* Sliders */}
               <div className="space-y-5">
@@ -901,15 +841,15 @@ export default function CityLab() {
                   <ParamSlider
                     key={slider.key}
                     config={slider}
-                    value={params[slider.key]}
+                    value={baseParams[slider.key]}
                     onChange={handleSliderChange}
                   />
                 ))}
               </div>
 
-              {/* Presets */}
+              {/* Presets & Actions Bar */}
               <div className="mt-6 pt-5 border-t border-white/5">
-                <p className="text-xs text-[#E8E5E0]/50 mb-3">Presets</p>
+                <p className="text-xs text-[#E8E5E0]/50 mb-3">Preset Scenarios</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(PRESET_LABELS).map(([key, label]) => (
                     <button
@@ -917,7 +857,7 @@ export default function CityLab() {
                       onClick={() => handlePreset(key)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 ${
                         activePreset === key
-                          ? 'bg-[#A3E635] text-[#0A1F0A]'
+                          ? 'bg-[#A3E635] text-[#0A1F0A] font-semibold'
                           : 'bg-white/5 text-[#E8E5E0]/70 hover:bg-white/10 hover:text-[#E8E5E0]'
                       }`}
                       aria-pressed={activePreset === key}
@@ -926,23 +866,38 @@ export default function CityLab() {
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-3 mt-3">
+
+                <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-3 border-t border-white/5">
                   <button
-                    onClick={handleReset}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-[#E8E5E0]/50 hover:bg-white/10 hover:text-[#E8E5E0] transition-colors duration-200"
+                    onClick={resetToDefaults}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-[#E8E5E0]/60 hover:bg-white/10 hover:text-[#E8E5E0] transition-colors duration-200"
+                    title="Reset to baseline"
                   >
                     ↺ Reset
                   </button>
+
                   <button
                     onClick={() => setCompareMode(!compareMode)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 ${
                       compareMode
-                        ? 'bg-[#059669] text-white'
-                        : 'bg-white/5 text-[#E8E5E0]/50 hover:bg-white/10 hover:text-[#E8E5E0]'
+                        ? 'bg-[#059669] text-white font-semibold'
+                        : 'bg-white/5 text-[#E8E5E0]/60 hover:bg-white/10 hover:text-[#E8E5E0]'
                     }`}
                     aria-pressed={compareMode}
                   >
                     {compareMode ? '✕ Close Compare' : '⇄ Compare'}
+                  </button>
+
+                  {/* Share My City Button */}
+                  <button
+                    onClick={handleShare}
+                    className="relative ml-auto px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] text-[#0A1F0A] hover:bg-[#A3E635] transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95"
+                    title="Share this exact city configuration via URL"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    <span>{copied ? 'Copied Link! 📋' : 'Share My City'}</span>
                   </button>
                 </div>
               </div>
@@ -974,7 +929,7 @@ export default function CityLab() {
 
             {/* Comparison view (when enabled) */}
             {compareMode && (
-              <ComparisonView baseline={baseline} current={simulation} />
+              <ComparisonView baseline={baseSimulation} current={simulation} />
             )}
           </motion.div>
         </div>
@@ -987,9 +942,14 @@ export default function CityLab() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
         >
-          <h3 className="text-sm font-semibold text-[#A3E635] uppercase tracking-wider mb-5 text-center">
-            Impact Indicators
-          </h3>
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <h3 className="text-sm font-semibold text-[#A3E635] uppercase tracking-wider">
+              Live Impact Indicators
+            </h3>
+            <span className="text-[11px] text-white/40 font-mono">
+              (Calculated directly from live parameters)
+            </span>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {INDICATORS.map(({ key, label, unit }) => (
               <IndicatorCard

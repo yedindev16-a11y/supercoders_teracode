@@ -52,12 +52,21 @@ $$\text{DISCOVER} \longrightarrow \text{EXPLORE} \longrightarrow \text{DESIGN} \
 
 ### 3. 🏙️ Future City Lab Simulator (`CityLab.tsx`)
 The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
+* **Unified Reactive State (`CityContext.tsx`):** A centralized `cityState` synchronizes the 5 core parameters across the simulator, city visual, Impact Observatory, and action scorecard.
 * **5 Interactive Sustainability Controls:**
-  1. **Renewable Energy (0–100%):** Deploys rooftop solar panels, wind turbine arrays, and clean power grids.
-  2. **Urban Green Coverage (0–100%):** Expands vertical gardens, city parks, canopy cover, and bio-corridors.
-  3. **Sustainable Transport (0–100%):** Transforms roads into active cycling lanes and electrified transit networks.
+  1. **Renewable Energy (0–100%):** Deploys rooftop solar arrays and clean power grids.
+  2. **Urban Green Coverage (0–100%):** Expands vertical gardens, city parks, native tree canopy, and bio-corridors.
+  3. **Sustainable Transport (0–100%):** Deploys active cycling lanes, electric catamarans, and electrified tram networks.
   4. **Waste Recovery (0–100%):** Integrates circular sorting nodes and composting hubs.
-  5. **Water Conservation (0–100%):** Deploys rainwater catchment, retention ponds, and bioswales.
+  5. **Water Conservation (0–100%):** Deploys rainwater catchment, retention ponds, backwater revitalization, and bioswales.
+* **Kerala 2040 Sustainable Systems Model:**
+  * **CIAL-Inspired Solar Rooftops:** Sloped photovoltaic canopies that scale density and active cell glows with Renewable Energy.
+  * **Kochi Water Metro & Electric Transit:** Solar-electric catamarans gliding along water channels and overhead-catenary light trams that multiply with Sustainable Transport.
+  * **Living Backwater Hydrology:** Dynamic SVG canal gradient that transitions from murky grey-green to crystalline aqua as Water Conservation improves.
+  * **Native Coconut Palm (`Kera`) Canopy:** Lush procedural palms and urban tree groves that scale dynamically with Green Coverage.
+* **Share My City (URL State Encoding):**
+  * One-click shareable URL encoding all five parameters (`?energy=..&green=..&transit=..&waste=..&water=..`).
+  * Instant clipboard copy and auto-restoration banner on link load.
 * **Instant Preset Scenarios:**
   * *Today's Average City* (Baseline status-quo)
   * *Progressive City* (Active sustainable investment)
@@ -70,8 +79,8 @@ The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 * **SVG Circular Sustainability Gauge:** Real-time 0–100 index calculation with color transitions.
 
 ### 4. 🔬 Impact Observatory (`ImpactObservatory.tsx`)
-* **Pentagonal Systems Radar Matrix:** Pure SVG spider/radar chart displaying multivariate balance across energy, green space, transport, circularity, and hydrology. Includes live slider overrides.
-* **Synthesized Metric Indicators:** Horizontal gradient-animated progress bars representing planetary boundaries.
+* **Dual Pentagonal Systems Radar Matrix:** Pure SVG spider/radar chart plotting the **Live City Model** (electric lime fill) directly against the **2040 Target** (dashed emerald reference polygon) across all 5 systems.
+* **Target-Benchmarked Planetary Metric Bars:** 6 horizontal progress bars driven live by simulation telemetry, each featuring explicit target milestones (e.g. *2040 Target: 85%*) and visual tick markers.
 * **2026–2050 Strategic Transition Roadmap:** Milestone cards connecting localized microgrids to net-zero equilibrium targets.
 
 ### 5. 🌿 Green Discovery Solutions (`GreenDiscovery.tsx`)
@@ -81,9 +90,10 @@ The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 
 ### 6. ✅ Take Action Interactive Checklist (`TakeAction.tsx`)
 * Contrast editorial layout (`#F5F5F0`) highlighting actionable human agency.
-* 12 practical actions segmented into **At Home**, **In Transit**, and **In Community**.
-* Real-time progress bar computing the user's **Personal Action Index**.
-* Zero-hydration mismatch state management powered by React 19's `useSyncExternalStore` and `localStorage` persistence (`ecoterra-actions`).
+* **Scorecard-to-City Feedback Loop:** All 12 practical actions directly inject parameter boosts into the live city model (+3% to +5% to relevant systems).
+* **Live Index Delta Tracking:** Real-time index change readout (e.g. `14 → 23 (+9 pts)`) showing the tangible impact of individual actions on the city.
+* **Duplicate Reward Prevention:** Set-based toggle keys ensure single-grant boosts per action.
+* **Zero-Hydration Persistence:** Local storage synchronization (`ecoterra-actions`) with React 19 safety.
 
 ### 7. 🌌 Closing Experience & Global Footer (`Footer.tsx`)
 * Inspirational Native American proverb framing intergenerational ecological stewardship.
@@ -137,8 +147,8 @@ The visual language balances cinematic depth with technical precision:
 * **Language:** [TypeScript 5.9](https://www.typescriptlang.org/)
 * **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 * **Animation:** [Motion](https://motion.dev/) (`motion/react`)
-* **State Management:** React 19 `useSyncExternalStore` & `useMemo`
-* **Icons & Visuals:** Inline procedural SVGs (Zero external icon bundle bloat)
+* **State Management:** React 19 Context (`CityContext.tsx`) + `localStorage` persistence + Bi-directional URL Search Params
+* **Icons & Visuals:** Inline procedural SVGs with dynamic visual scaling (Zero external icon bundle bloat)
 * **Hosting:** [Vercel](https://vercel.com/) Edge Network
 
 ---
@@ -150,13 +160,15 @@ supercoders_teracode/
 ├── app/
 │   ├── components/
 │   │   ├── Challenge.tsx         # Environmental challenge & split skyline SVG
-│   │   ├── CityLab.tsx           # 2.5D isometric simulator & indicator cards
+│   │   ├── CityLab.tsx           # 2.5D isometric simulator & Kerala 2040 visual touches
 │   │   ├── Footer.tsx            # Closing quote, attribution & footer
 │   │   ├── GreenDiscovery.tsx    # 6-pillar bento grid solutions
 │   │   ├── Hero.tsx              # Cinematic hero section with ambient glow
-│   │   ├── ImpactObservatory.tsx # Pentagonal Radar chart & timeline
+│   │   ├── ImpactObservatory.tsx # Dual Radar chart (Live vs 2040 Target) & metric bars
 │   │   ├── Navigation.tsx        # Glassmorphic header & mobile navigation
-│   │   └── TakeAction.tsx        # Action checklist with localStorage store
+│   │   └── TakeAction.tsx        # Action checklist wired to city parameter boosts
+│   ├── context/
+│   │   └── CityContext.tsx       # Unified reactive cityState, targets, boosts & share link
 │   ├── lib/
 │   │   └── simulation.ts         # Pure TypeScript mathematical simulation model
 │   ├── favicon.ico

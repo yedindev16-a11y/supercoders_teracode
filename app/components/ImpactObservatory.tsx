@@ -1,7 +1,8 @@
 'use client';
 
 import { motion, useInView } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useRef, useMemo } from 'react';
+import { useCity, TARGETS_2040 } from '../context/CityContext';
 
 // Radar Chart calculations for a regular pentagon
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
@@ -15,62 +16,112 @@ function polarToCartesian(centerX: number, centerY: number, radius: number, angl
 export default function ImpactObservatory() {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const { effectiveParams, simulation } = useCity();
 
-  // Radar metrics state (can be tweaked by user)
-  const [radarData, setRadarData] = useState<{ label: string; value: number }[]>([
-    { label: 'Energy', value: 78 },
-    { label: 'Green Space', value: 65 },
-    { label: 'Transport', value: 82 },
-    { label: 'Circular Waste', value: 70 },
-    { label: 'Water Security', value: 75 },
-  ]);
+  // Radar metrics derived directly from live cityState
+  const liveRadarData = useMemo(() => [
+    { label: 'Energy', value: effectiveParams.renewableEnergy, target: TARGETS_2040.renewableEnergy },
+    { label: 'Green Space', value: effectiveParams.greenCoverage, target: TARGETS_2040.greenCoverage },
+    { label: 'Transport', value: effectiveParams.sustainableTransport, target: TARGETS_2040.sustainableTransport },
+    { label: 'Circularity', value: effectiveParams.wasteRecovery, target: TARGETS_2040.wasteRecovery },
+    { label: 'Water Security', value: effectiveParams.waterConservation, target: TARGETS_2040.waterConservation },
+  ], [effectiveParams]);
 
   const cx = 200;
   const cy = 200;
   const maxRadius = 130;
   const levels = [0.25, 0.5, 0.75, 1.0];
 
-  // Polygon points
-  const points = radarData.map((item, idx) => {
-    const angle = (360 / radarData.length) * idx;
-    const r = (item.value / 100) * maxRadius;
-    const p = polarToCartesian(cx, cy, r, angle);
-    return `${p.x},${p.y}`;
-  }).join(' ');
+  // Polygon points for Live City Model
+  const livePoints = useMemo(() => {
+    return liveRadarData.map((item, idx) => {
+      const angle = (360 / liveRadarData.length) * idx;
+      const r = (item.value / 100) * maxRadius;
+      const p = polarToCartesian(cx, cy, r, angle);
+      return `${p.x},${p.y}`;
+    }).join(' ');
+  }, [liveRadarData]);
 
-  const indicators = [
-    { label: 'CO₂ Emissions Reduction', val: 74, color: 'from-[#10B981] to-[#D4FF00]', desc: 'Target: -80% by 2040' },
-    { label: 'Air Quality Index (AQI)', val: 86, color: 'from-[#059669] to-[#34D399]', desc: 'Optimal: Clean breathable urban corridors' },
-    { label: 'Urban Biodiversity Index', val: 68, color: 'from-[#84CC16] to-[#A3E635]', desc: 'Native species density in biophilic belts' },
-    { label: 'Community Livability Score', val: 91, color: 'from-[#34D399] to-[#D4FF00]', desc: '15-minute city radius satisfaction' },
-    { label: 'Resource Circularity', val: 72, color: 'from-[#059669] to-[#84CC16]', desc: 'Waste diversion from landfills' },
-    { label: 'Climate Shock Resilience', val: 80, color: 'from-[#10B981] to-[#A3E635]', desc: 'Flood, heatwave & storm attenuation' },
-  ];
+  // Polygon points for 2040 Target
+  const targetPoints = useMemo(() => {
+    return liveRadarData.map((item, idx) => {
+      const angle = (360 / liveRadarData.length) * idx;
+      const r = (item.target / 100) * maxRadius;
+      const p = polarToCartesian(cx, cy, r, angle);
+      return `${p.x},${p.y}`;
+    }).join(' ');
+  }, [liveRadarData]);
+
+  // Metric bars driven directly from live simulation indicators
+  const indicators = useMemo(() => [
+    {
+      label: 'CO₂ Emissions Reduction',
+      val: simulation.indicators.co2ReductionPercent,
+      target: 80,
+      color: 'from-[#10B981] to-[#D4FF00]',
+      desc: 'Annual greenhouse gas abatement vs baseline fossil benchmarks',
+    },
+    {
+      label: 'Air Quality Index (AQI Health)',
+      val: simulation.indicators.airQualityIndex,
+      target: 90,
+      color: 'from-[#059669] to-[#34D399]',
+      desc: 'Ambient particulate matter filtration via canopy & transit electrification',
+    },
+    {
+      label: 'Urban Biodiversity Index',
+      val: simulation.indicators.biodiversityScore,
+      target: 85,
+      color: 'from-[#84CC16] to-[#A3E635]',
+      desc: 'Native flora, pollinator highways & urban mangrove preservation',
+    },
+    {
+      label: 'Community Livability Score',
+      val: simulation.indicators.livabilityScore,
+      target: 90,
+      color: 'from-[#34D399] to-[#D4FF00]',
+      desc: '15-minute neighborhood walkability, thermal comfort & acoustic health',
+    },
+    {
+      label: 'Resource Circularity',
+      val: simulation.indicators.resourceEfficiency,
+      target: 85,
+      color: 'from-[#059669] to-[#84CC16]',
+      desc: 'Municipal organic & technical waste diverted from landfill streams',
+    },
+    {
+      label: 'Climate Shock Resilience',
+      val: simulation.indicators.climateResilience,
+      target: 85,
+      color: 'from-[#10B981] to-[#A3E635]',
+      desc: 'Monsoon flood sponge attenuation, bioswales & decentralized power reserves',
+    },
+  ], [simulation.indicators]);
 
   const milestones = [
     {
       year: '2026',
       title: 'Decentralized Microgrid Trials',
-      desc: 'Smart local solar and flow-battery storage piloted across high-density residential blocks.',
-      status: 'Active Milestone',
+      desc: 'Solar rooftop expansion & local battery storage piloted across high-density residential wards.',
+      status: 'Current Sprint',
     },
     {
       year: '2030',
       title: 'UN SDG 11 Target Horizon',
-      desc: 'Slashing per-capita urban environmental impact with zero municipal landfill waste targets.',
+      desc: 'Substantial per-capita urban environmental impact reduction; zero municipal landfill waste milestones.',
       status: 'Targeted',
     },
     {
       year: '2040',
-      title: 'Autonomous Clean Transit Mandate',
-      desc: 'Full phaseout of combustion passenger transport; 100% electrified or green hydrogen logistics.',
-      status: 'Projected',
+      title: 'Kerala 2040 Net-Zero Equilibrium',
+      desc: 'Full Water Metro & electric tram feeder networks; closed-loop municipal hydrology and 100% CIAL-model clean energy.',
+      status: 'State Blueprint',
     },
     {
       year: '2050',
-      title: 'Regenerative Megacity Equilibrium',
-      desc: 'Net-negative carbon operation, closed-loop hydrology, and continuous vertical ecological canopy.',
-      status: 'Vision',
+      title: 'Regenerative Megacity Canopy',
+      desc: 'Net-negative carbon operation, automated biophilic integration & intergenerational ecological stewardship.',
+      status: 'Long-term Vision',
     },
   ];
 
@@ -90,13 +141,13 @@ export default function ImpactObservatory() {
           className="text-center max-w-3xl mx-auto mb-20"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4FF00]/10 border border-[#D4FF00]/20 text-xs font-mono font-medium text-[#D4FF00] uppercase tracking-wider mb-4">
-            System Observability
+            Live System Observability
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#F5F5F0]">
             Impact Observatory
           </h2>
           <p className="mt-4 text-base sm:text-lg text-[#F5F5F0]/65 leading-relaxed">
-            Multivariate visualization of core ecological systems. Explore the mathematical relationships between urban density, resource conservation, and atmospheric health.
+            Real-time multi-system tracking. Compare your active city model directly against the ambitious <strong className="text-[#A3E635]">2040 Target</strong> benchmark for sustainable urban futures.
           </p>
         </motion.div>
 
@@ -112,11 +163,18 @@ export default function ImpactObservatory() {
             <div className="w-full flex items-center justify-between border-b border-white/10 pb-4 mb-4">
               <div>
                 <h3 className="text-lg font-bold text-[#F5F5F0]">Systems Radar Matrix</h3>
-                <p className="text-xs text-[#F5F5F0]/50 font-mono mt-0.5">Pentagonal Equilibrium Model</p>
+                <p className="text-xs text-[#F5F5F0]/50 font-mono mt-0.5">Live City Model vs. 2040 Target</p>
               </div>
-              <span className="text-xs px-2.5 py-1 rounded-md bg-[#D4FF00]/10 text-[#D4FF00] font-mono">
-                Interactive
-              </span>
+              <div className="flex items-center gap-3 text-xs font-mono">
+                <span className="flex items-center gap-1.5 text-[#D4FF00]">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#D4FF00]" />
+                  Live City
+                </span>
+                <span className="flex items-center gap-1.5 text-[#10B981]">
+                  <span className="inline-block w-2.5 h-0.5 bg-[#10B981] border-b border-dashed" />
+                  2040 Target
+                </span>
+              </div>
             </div>
 
             {/* SVG Radar */}
@@ -124,8 +182,8 @@ export default function ImpactObservatory() {
               <svg viewBox="0 0 400 400" className="w-full h-full overflow-visible">
                 {/* Background Concentric Grid Pentagons */}
                 {levels.map((lvl, lIdx) => {
-                  const gridPts = radarData.map((_, i) => {
-                    const ang = (360 / radarData.length) * i;
+                  const gridPts = liveRadarData.map((_, i) => {
+                    const ang = (360 / liveRadarData.length) * i;
                     const pt = polarToCartesian(cx, cy, maxRadius * lvl, ang);
                     return `${pt.x},${pt.y}`;
                   }).join(' ');
@@ -143,8 +201,8 @@ export default function ImpactObservatory() {
                 })}
 
                 {/* Axis Radial Lines */}
-                {radarData.map((_, i) => {
-                  const ang = (360 / radarData.length) * i;
+                {liveRadarData.map((_, i) => {
+                  const ang = (360 / liveRadarData.length) * i;
                   const edgePt = polarToCartesian(cx, cy, maxRadius, ang);
                   return (
                     <line
@@ -159,22 +217,30 @@ export default function ImpactObservatory() {
                   );
                 })}
 
-                {/* Filled Radar Polygon */}
-                <motion.polygon
-                  points={points}
+                {/* Layer 1: 2040 Target Polygon (Dashed Emerald Boundary) */}
+                <polygon
+                  points={targetPoints}
+                  fill="rgba(16, 185, 129, 0.08)"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  strokeDasharray="4 4"
+                  strokeLinejoin="round"
+                  className="transition-all duration-700"
+                />
+
+                {/* Layer 2: Live City Model Polygon (Vibrant Electric Lime) */}
+                <polygon
+                  points={livePoints}
                   fill="rgba(212, 255, 0, 0.22)"
                   stroke="#D4FF00"
                   strokeWidth="2.5"
                   strokeLinejoin="round"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={isInView ? { scale: 1, opacity: 1 } : {}}
-                  transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
-                  style={{ transformOrigin: `${cx}px ${cy}px` }}
+                  className="transition-all duration-500"
                 />
 
                 {/* Vertex Points & Labels */}
-                {radarData.map((item, idx) => {
-                  const ang = (360 / radarData.length) * idx;
+                {liveRadarData.map((item, idx) => {
+                  const ang = (360 / liveRadarData.length) * idx;
                   const r = (item.value / 100) * maxRadius;
                   const pt = polarToCartesian(cx, cy, r, ang);
                   const labelPt = polarToCartesian(cx, cy, maxRadius + 24, ang);
@@ -188,7 +254,7 @@ export default function ImpactObservatory() {
                         fill="#D4FF00"
                         stroke="#0A1F0A"
                         strokeWidth="2"
-                        className="cursor-pointer transition-all hover:scale-150"
+                        className="transition-all duration-500"
                       />
                       <text
                         x={labelPt.x}
@@ -209,28 +275,20 @@ export default function ImpactObservatory() {
               </svg>
             </div>
 
-            {/* Micro Slider Controls to tweak radar live */}
-            <div className="w-full mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-white/5 pt-4">
-              {radarData.map((d, i) => (
-                <div key={i} className="flex flex-col gap-1">
-                  <div className="flex justify-between text-[11px] font-mono text-[#F5F5F0]/70">
-                    <span>{d.label}</span>
-                    <span className="text-[#D4FF00] font-bold">{d.value}%</span>
+            {/* Live Metrics Summary Bar */}
+            <div className="w-full mt-6 grid grid-cols-2 sm:grid-cols-5 gap-2 border-t border-white/5 pt-4 text-center">
+              {liveRadarData.map((d, i) => {
+                const diff = d.value - d.target;
+                return (
+                  <div key={i} className="flex flex-col p-1.5 rounded-lg bg-white/[0.02]">
+                    <span className="text-[10px] text-[#F5F5F0]/60 font-mono">{d.label}</span>
+                    <span className="text-sm font-bold font-mono text-[#D4FF00] mt-0.5">{d.value}%</span>
+                    <span className={`text-[10px] font-mono mt-0.5 ${diff >= 0 ? 'text-emerald-400' : 'text-amber-400/80'}`}>
+                      {diff >= 0 ? `✓ Target Met` : `${diff}% vs 2040`}
+                    </span>
                   </div>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
-                    value={d.value}
-                    onChange={(e) => {
-                      const next = [...radarData];
-                      next[i] = { ...next[i], value: Number(e.target.value) };
-                      setRadarData(next);
-                    }}
-                    className="h-1.5 accent-[#D4FF00] cursor-pointer"
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
 
@@ -241,34 +299,57 @@ export default function ImpactObservatory() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="lg:col-span-6 rounded-3xl border border-white/10 bg-[#0D1B0D]/80 p-6 sm:p-8 backdrop-blur-md shadow-2xl flex flex-col justify-between"
           >
-            <div className="border-b border-white/10 pb-4 mb-6">
-              <h3 className="text-lg font-bold text-[#F5F5F0]">Synthesized Environmental Metrics</h3>
-              <p className="text-xs text-[#F5F5F0]/50 font-mono mt-0.5">Calculated resilience across critical biosphere vectors</p>
+            <div className="border-b border-white/10 pb-4 mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-[#F5F5F0]">Synthesized Environmental Metrics</h3>
+                <p className="text-xs text-[#F5F5F0]/50 font-mono mt-0.5">Driven in real time by City Lab parameters</p>
+              </div>
+              <span className="text-xs font-mono text-[#A3E635] px-2.5 py-1 rounded bg-white/5 border border-white/10">
+                Live Reactive
+              </span>
             </div>
 
             <div className="space-y-5">
-              {indicators.map((ind, i) => (
-                <div key={i} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="font-semibold text-[#F5F5F0]">{ind.label}</span>
-                    <span className="font-mono font-bold text-[#D4FF00]">{ind.val}%</span>
+              {indicators.map((ind, i) => {
+                const isMet = ind.val >= ind.target;
+                return (
+                  <div key={i} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="font-semibold text-[#F5F5F0]">{ind.label}</span>
+                      <div className="flex items-center gap-2 font-mono">
+                        <span className="font-bold text-[#D4FF00]">{ind.val}%</span>
+                        <span className="text-[11px] text-[#A3E635]/80">
+                          (2040 Target: {ind.target}%)
+                        </span>
+                      </div>
+                    </div>
+                    {/* Progress track with target tick mark */}
+                    <div className="relative h-3 w-full rounded-full bg-white/5 overflow-hidden p-0.5 border border-white/10">
+                      {/* 2040 Target Tick indicator */}
+                      <div
+                        className="absolute top-0 bottom-0 w-0.5 bg-white/80 z-10 shadow-[0_0_6px_rgba(255,255,255,0.8)]"
+                        style={{ left: `${ind.target}%` }}
+                        title={`2040 Target: ${ind.target}%`}
+                      />
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${ind.color} transition-all duration-500`}
+                        style={{ width: `${Math.min(100, ind.val)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[11px] text-[#F5F5F0]/50 font-mono">
+                      <span>{ind.desc}</span>
+                      <span className={isMet ? 'text-emerald-400 font-bold' : 'text-amber-400/90'}>
+                        {isMet ? '✓ 2040 Target Reached' : `${ind.target - ind.val}% to 2040 Target`}
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-3 w-full rounded-full bg-white/5 overflow-hidden p-0.5 border border-white/10">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={isInView ? { width: `${ind.val}%` } : {}}
-                      transition={{ duration: 1.2, delay: 0.2 + i * 0.1, ease: 'easeOut' }}
-                      className={`h-full rounded-full bg-gradient-to-r ${ind.color}`}
-                    />
-                  </div>
-                  <div className="text-[11px] text-[#F5F5F0]/40 font-mono">{ind.desc}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-6 rounded-xl bg-white/[0.03] border border-white/5 p-3.5 text-xs text-[#F5F5F0]/60 flex items-center gap-3">
               <span className="text-[#D4FF00] text-base">ℹ</span>
-              <span>Values synthesized using integrated non-linear regression curves with environmental weighting coefficients.</span>
+              <span>All indicators compute live from your custom City Lab configuration and citizen action scorecards.</span>
             </div>
           </motion.div>
         </div>
@@ -282,7 +363,7 @@ export default function ImpactObservatory() {
         >
           <div className="mb-10 text-center sm:text-left">
             <h3 className="text-2xl font-bold text-[#F5F5F0]">Strategic Transition Roadmap</h3>
-            <p className="text-sm text-[#F5F5F0]/50 font-mono mt-1">Key international thresholds leading to net-zero human settlements</p>
+            <p className="text-sm text-[#F5F5F0]/50 font-mono mt-1">Key institutional & municipal thresholds leading to net-zero human settlements</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
