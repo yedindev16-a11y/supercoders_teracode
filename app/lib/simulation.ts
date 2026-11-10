@@ -220,3 +220,115 @@ export function getScoreColor(score: number): string {
   return "#EF4444";
 }
 
+/* ═══════════════════════════════════════════════════════════
+   KERALA MONSOON STRESS TEST ENGINE
+   Simulates extreme 24h Southwest Monsoon downpour (250mm)
+   Evaluates Sponge City absorption vs Flash Inundation
+   All values illustrative and educational
+   ═══════════════════════════════════════════════════════════ */
+
+export interface MonsoonTestResult {
+  absorptionRate: number;        // 0-100% capacity to sponge torrential downpour
+  floodRiskScore: number;        // 0-100 risk level (lower is safer)
+  status: 'sponge-resilient' | 'moderate-runoff' | 'severe-flooding';
+  statusLabel: string;
+  badgeColor: string;
+  summary: string;
+  breakdown: {
+    permeableInfiltration: number; // Soil & canopy sponge capacity
+    retentionDrainage: number;     // Cisterns, bioswales & canal buffering
+    climateDefense: number;        // Decentralized pumps & shock resilience
+  };
+  streetFlooded: boolean;
+  canalOverflow: boolean;
+  waterLevelIncrease: number;     // Visual delta for canal (px)
+  recommendations: string[];
+}
+
+export function calculateMonsoonTest(
+  params: CityParameters,
+  climateResilience: number
+): MonsoonTestResult {
+  const permeableInfiltration = Math.min(100, Math.round(params.greenCoverage * 0.95));
+  const retentionDrainage = Math.min(100, Math.round(params.waterConservation * 0.9 + 5));
+  const climateDefense = Math.min(100, Math.round(climateResilience * 0.9));
+
+  // Weighted sponge absorption capacity
+  const absorptionRate = Math.min(
+    100,
+    Math.round(permeableInfiltration * 0.35 + retentionDrainage * 0.35 + climateDefense * 0.30)
+  );
+
+  const floodRiskScore = Math.max(0, 100 - absorptionRate);
+
+  if (absorptionRate >= 70) {
+    return {
+      absorptionRate,
+      floodRiskScore,
+      status: 'sponge-resilient',
+      statusLabel: 'Sponge City Equilibrium',
+      badgeColor: '#10B981',
+      summary:
+        'Outstanding monsoon flood resilience. Permeable urban green belts, deep root systems, and desilted backwater canals completely absorbed the simulated 250mm downpour without street waterlogging.',
+      breakdown: {
+        permeableInfiltration,
+        retentionDrainage,
+        climateDefense,
+      },
+      streetFlooded: false,
+      canalOverflow: false,
+      waterLevelIncrease: 6,
+      recommendations: [
+        'Sponge capacity safely handles peak tropical precipitation',
+        'Groundwater recharge reservoirs fully replenishing regional aquifers',
+      ],
+    };
+  }
+
+  if (absorptionRate >= 45) {
+    return {
+      absorptionRate,
+      floodRiskScore,
+      status: 'moderate-runoff',
+      statusLabel: 'Partial Absorption (Localized Runoff)',
+      badgeColor: '#F59E0B',
+      summary:
+        'Moderate stormwater absorption (~65% buffered). Backwater canal water levels reached peak holding capacity, with minor localized waterlogging on lower transit corridors.',
+      breakdown: {
+        permeableInfiltration,
+        retentionDrainage,
+        climateDefense,
+      },
+      streetFlooded: true,
+      canalOverflow: false,
+      waterLevelIncrease: 12,
+      recommendations: [
+        'Increase Water Conservation to expand bioswales and retention cisterns',
+        'Boost Green Coverage along transport corridors to curb concrete surface runoff',
+      ],
+    };
+  }
+
+  return {
+    absorptionRate,
+    floodRiskScore,
+    status: 'severe-flooding',
+    statusLabel: 'Flash Waterlogging Alert',
+    badgeColor: '#EF4444',
+    summary:
+      'Critical flood vulnerability! Low permeable soil and inadequate water retention caused sudden stormwater runoff overload. Canal banks crested, resulting in severe street flooding across low-lying sectors.',
+    breakdown: {
+      permeableInfiltration,
+      retentionDrainage,
+      climateDefense,
+    },
+    streetFlooded: true,
+    canalOverflow: true,
+    waterLevelIncrease: 18,
+    recommendations: [
+      'Urgent: Elevate Water Conservation to buffer torrential monsoon surges',
+      'Expand permeable green coverage and bio-retention wetlands to sponge surface runoff',
+    ],
+  };
+}
+

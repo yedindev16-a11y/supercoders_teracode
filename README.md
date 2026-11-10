@@ -59,11 +59,20 @@ The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
   3. **Sustainable Transport (0–100%):** Deploys active cycling lanes, electric catamarans, and electrified tram networks.
   4. **Waste Recovery (0–100%):** Integrates circular sorting nodes and composting hubs.
   5. **Water Conservation (0–100%):** Deploys rainwater catchment, retention ponds, backwater revitalization, and bioswales.
-* **Kerala 2040 Sustainable Systems Model:**
-  * **CIAL-Inspired Solar Rooftops:** Sloped photovoltaic canopies that scale density and active cell glows with Renewable Energy.
+* **Kerala 2040 Sustainable Systems & Bioclimatic Model:**
+  * **CIAL-Inspired Solar Rooftops & Gables:** Sloped terracotta-style roofs with integrated high-efficiency photovoltaic canopies that scale density and active cell glow with Renewable Energy.
+  * **Traditional Bioclimatic Architecture:** Modern *Charupadi* shaded veranda louvers and *Mugappu* passive ventilation accents engineered for tropical heat mitigation.
   * **Kochi Water Metro & Electric Transit:** Solar-electric catamarans gliding along water channels and overhead-catenary light trams that multiply with Sustainable Transport.
   * **Living Backwater Hydrology:** Dynamic SVG canal gradient that transitions from murky grey-green to crystalline aqua as Water Conservation improves.
-  * **Native Coconut Palm (`Kera`) Canopy:** Lush procedural palms and urban tree groves that scale dynamically with Green Coverage.
+  * **Native Coconut Palm (`Kera`) Canopy & Tropical Flora:** Lush procedural palms, banana broadleaf bio-buffers, and wetland bio-drapes that scale dynamically with Green Coverage.
+* **🌧️ Kerala Monsoon Stress Test Engine:**
+  * **Extreme Tropical Precipitation Simulation:** Evaluates municipal resilience against a simulated 250 mm / 24h Southwest Monsoon downpour.
+  * **Hydrological Infiltration & Absorption Algorithm:** Computes the city's sponge capacity using live **Water Conservation** (drainage & cistern buffering), **Green Coverage** (permeable soil infiltration), and **Climate Shock Resilience**.
+  * **Dynamic Multi-Outcome Visualization:**
+    * *Sponge City Equilibrium (Absorption ≥ 70%):* Clean permeable bioswale infiltration, surging clear backwater canal, zero street waterlogging.
+    * *Partial Runoff (45–69%):* Canal at peak threshold with localized pooling on lower transit lanes.
+    * *Flash Inundation Alert (< 45%):* Overflowing canal banks and waterlogged transit boulevard with animated flood ripple alerts.
+  * **Actionable Diagnostics & Live Retry:** Real-time breakdown of sponge metrics and recommendations with instant one-click re-testing.
 * **Share My City (URL State Encoding):**
   * One-click shareable URL encoding all five parameters (`?energy=..&green=..&transit=..&waste=..&water=..`).
   * Instant clipboard copy and auto-restoration banner on link load.
@@ -116,6 +125,14 @@ Where weights ($w_i$) reflect major urban sustainability indices:
 * **Sustainable Transport:** $0.20$
 * **Water Conservation:** $0.20$
 * **Waste Recovery:** $0.15$
+
+### 🌧️ Monsoon Sponge Infiltration Model
+$$\text{Absorption Rate} = 0.35 \times \text{Infiltration}_{\text{Green}} + 0.35 \times \text{Retention}_{\text{Water}} + 0.30 \times \text{Defense}_{\text{Resilience}}$$
+$$\text{Flood Risk Score} = \max(0, 100 - \text{Absorption Rate})$$
+
+* **Sponge City Equilibrium ($\ge 70\%$):** 100% of extreme tropical precipitation absorbed without surface runoff.
+* **Partial Absorption ($45\% - 69\%$):** Minor localized ponding along low-lying transit corridors.
+* **Flash Waterlogging Risk ($< 45\%$):** Overwhelmed drainage requiring immediate water storage and green infrastructure investment.
 
 > *Disclaimer: All simulation metrics are illustrative models designed for educational analysis and do not represent measured real-time scientific telemetry.*
 

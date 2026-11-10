@@ -4,7 +4,9 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useCall
 import {
   type CityParameters,
   type SimulationResult,
+  type MonsoonTestResult,
   calculateSimulation,
+  calculateMonsoonTest,
   DEFAULT_PARAMS,
 } from '../lib/simulation';
 
@@ -58,6 +60,12 @@ interface CityContextType {
   shareUrl: string;
   copyShareUrl: () => Promise<boolean>;
   hasSharedState: boolean;
+
+  // Monsoon Stress Test
+  isMonsoonActive: boolean;
+  triggerMonsoonTest: () => void;
+  resetMonsoonTest: () => void;
+  monsoonResult: MonsoonTestResult | null;
 }
 
 const CityContext = createContext<CityContextType | null>(null);
@@ -71,6 +79,7 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
   const [activePreset, setActivePreset] = useState<string | null>('current');
   const [completedActions, setCompletedActions] = useState<Record<string, boolean>>({});
   const [hasSharedState, setHasSharedState] = useState(false);
+  const [isMonsoonActive, setIsMonsoonActive] = useState(false);
 
   // Restore state from URL query parameters on initial mount
   useEffect(() => {
@@ -227,6 +236,19 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
     }
   }, [shareUrl]);
 
+  const triggerMonsoonTest = useCallback(() => {
+    setIsMonsoonActive(true);
+  }, []);
+
+  const resetMonsoonTest = useCallback(() => {
+    setIsMonsoonActive(false);
+  }, []);
+
+  const monsoonResult = useMemo(() => {
+    if (!isMonsoonActive) return null;
+    return calculateMonsoonTest(effectiveParams, simulation.indicators.climateResilience);
+  }, [isMonsoonActive, effectiveParams, simulation.indicators.climateResilience]);
+
   const value = useMemo(
     () => ({
       baseParams,
@@ -244,6 +266,10 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
       shareUrl,
       copyShareUrl,
       hasSharedState,
+      isMonsoonActive,
+      triggerMonsoonTest,
+      resetMonsoonTest,
+      monsoonResult,
     }),
     [
       baseParams,
@@ -260,6 +286,10 @@ export function CityProvider({ children }: { children: React.ReactNode }) {
       shareUrl,
       copyShareUrl,
       hasSharedState,
+      isMonsoonActive,
+      triggerMonsoonTest,
+      resetMonsoonTest,
+      monsoonResult,
     ]
   );
 

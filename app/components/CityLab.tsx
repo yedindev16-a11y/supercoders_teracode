@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import {
   type CityParameters,
   type SimulationResult,
+  type MonsoonTestResult,
   PRESETS,
   getScoreLabel,
   getScoreColor,
@@ -208,15 +209,75 @@ function CoconutPalm({
 }
 
 /* ═══════════════════════════════════════════════════════════
+   KERALA TROPICAL BROADLEAF & WETLAND FLORA
+   Plantain / broadleaf banana clusters & wetland bio-buffers
+   ═══════════════════════════════════════════════════════════ */
+
+function TropicalFlora({
+  x,
+  y,
+  scale = 1,
+  opacity = 1,
+}: {
+  x: number;
+  y: number;
+  scale?: number;
+  opacity?: number;
+}) {
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${scale})`} opacity={opacity} className="transition-all duration-700">
+      <path d="M 0 0 C -10 -12 -18 -16 -24 -10 C -24 -4 -12 0 0 0" fill="#047857" stroke="#065F46" strokeWidth="0.6" />
+      <path d="M 0 0 C 10 -14 20 -16 24 -10 C 24 -4 -12 0 0 0" fill="#059669" stroke="#047857" strokeWidth="0.6" />
+      <path d="M 0 0 C -3 -22 3 -26 0 -28 C -3 -26 3 -22 0 0" fill="#10B981" />
+      <path d="M 0 0 C -14 -6 -20 -2 -22 4 C -18 6 -8 3 0 0" fill="#065F46" opacity={0.65} />
+      <path d="M 0 0 C 14 -6 20 -2 22 4 C 18 6 8 3 0 0" fill="#047857" opacity={0.65} />
+    </g>
+  );
+}
+
+// Deterministic rain streaks distribution across 600x400 viewBox
+const RAIN_STREAKS = [
+  { x: 30, y: 15, d: 0.1 }, { x: 75, y: 45, d: 0.3 }, { x: 120, y: 20, d: 0.5 }, { x: 160, y: 65, d: 0.2 },
+  { x: 210, y: 30, d: 0.4 }, { x: 250, y: 85, d: 0.6 }, { x: 295, y: 25, d: 0.15 }, { x: 340, y: 55, d: 0.35 },
+  { x: 385, y: 20, d: 0.55 }, { x: 430, y: 75, d: 0.25 }, { x: 475, y: 35, d: 0.45 }, { x: 520, y: 90, d: 0.15 },
+  { x: 565, y: 25, d: 0.3 }, { x: 50, y: 115, d: 0.5 }, { x: 95, y: 155, d: 0.2 }, { x: 140, y: 125, d: 0.4 },
+  { x: 185, y: 175, d: 0.6 }, { x: 230, y: 135, d: 0.15 }, { x: 275, y: 195, d: 0.35 }, { x: 320, y: 145, d: 0.55 },
+  { x: 365, y: 185, d: 0.25 }, { x: 410, y: 140, d: 0.45 }, { x: 455, y: 200, d: 0.1 }, { x: 500, y: 150, d: 0.3 },
+  { x: 545, y: 190, d: 0.5 }, { x: 590, y: 125, d: 0.2 }, { x: 80, y: 225, d: 0.4 }, { x: 170, y: 245, d: 0.6 },
+  { x: 260, y: 235, d: 0.15 }, { x: 350, y: 255, d: 0.35 }, { x: 440, y: 240, d: 0.55 }, { x: 530, y: 250, d: 0.25 },
+];
+
+/* ═══════════════════════════════════════════════════════════
    CITY VISUALIZATION (SVG) — Enhanced with Kerala 2040 Touches
    ═══════════════════════════════════════════════════════════ */
 
-function CityVisualization({ result }: { result: SimulationResult }) {
+function CityVisualization({
+  result,
+  isMonsoonActive,
+  monsoonResult,
+}: {
+  result: SimulationResult;
+  isMonsoonActive: boolean;
+  monsoonResult: MonsoonTestResult | null;
+}) {
   const v = result.cityVisualState;
   const score = result.sustainabilityIndex;
-  const skyTop = getSkyColor(score);
-  const skyBottom = getSkyGradientBottom(score);
-  const canalColors = getCanalWaterColor(v.waterFeatures * 100);
+
+  // Atmospheric sky tone shifts darker & humid during monsoon
+  const skyTop = isMonsoonActive ? '#1E293B' : getSkyColor(score);
+  const skyBottom = isMonsoonActive ? '#0F172A' : getSkyGradientBottom(score);
+
+  // Dynamic backwater canal colors: murky under flash flood overload, crystalline aqua in sponge equilibrium
+  const canalColors = isMonsoonActive && monsoonResult?.status === 'severe-flooding'
+    ? { stop0: '#57473A', stop1: '#473C35' }
+    : isMonsoonActive && monsoonResult?.status === 'sponge-resilient'
+    ? { stop0: '#0F766E', stop1: '#0284C7' }
+    : getCanalWaterColor(v.waterFeatures * 100);
+
+  // Dynamic water level rise (px) during monsoon
+  const waterDelta = isMonsoonActive && monsoonResult ? monsoonResult.waterLevelIncrease : 0;
+  const canalY = 328 - waterDelta;
+  const canalHeight = 48 + waterDelta;
 
   return (
     <div className="relative w-full">
@@ -252,27 +313,62 @@ function CityVisualization({ result }: { result: SimulationResult }) {
         <path
           d="M 0 250 Q 80 200 160 230 Q 240 180 340 225 Q 440 190 520 220 Q 560 210 600 235 L 600 270 L 0 270 Z"
           fill="#1E293B"
-          opacity={0.35}
+          opacity={isMonsoonActive ? 0.6 : 0.35}
           className="transition-all duration-700"
         />
 
-        {/* Sun/Moon based on score */}
-        <circle
-          cx="520"
-          cy="55"
-          r={24 + score * 0.08}
-          fill={score > 40 ? '#FCD34D' : '#9CA3AF'}
-          opacity={0.85}
-          className="transition-all duration-700"
-        />
+        {/* Sun/Moon based on score (hidden in dense monsoon clouds) */}
+        {!isMonsoonActive && (
+          <circle
+            cx="520"
+            cy="55"
+            r={24 + score * 0.08}
+            fill={score > 40 ? '#FCD34D' : '#9CA3AF'}
+            opacity={0.85}
+            className="transition-all duration-700"
+          />
+        )}
 
-        {/* Clouds - fewer with higher score */}
-        <g opacity={Math.max(0.1, 1 - score / 85)} className="transition-all duration-700">
-          <ellipse cx="120" cy="55" rx="38" ry="14" fill="#94A3B8" opacity={0.45} />
-          <ellipse cx="145" cy="50" rx="28" ry="11" fill="#94A3B8" opacity={0.45} />
-          <ellipse cx="360" cy="40" rx="35" ry="12" fill="#94A3B8" opacity={0.35} />
-          <ellipse cx="390" cy="36" rx="26" ry="10" fill="#94A3B8" opacity={0.35} />
-        </g>
+        {/* Monsoon Storm Clouds Layer */}
+        {isMonsoonActive ? (
+          <g opacity={0.88} className="transition-all duration-700">
+            <ellipse cx="80" cy="28" rx="120" ry="24" fill="#1E293B" />
+            <ellipse cx="230" cy="22" rx="140" ry="28" fill="#0F172A" />
+            <ellipse cx="380" cy="26" rx="130" ry="26" fill="#1E293B" />
+            <ellipse cx="520" cy="30" rx="110" ry="24" fill="#0F172A" />
+          </g>
+        ) : (
+          /* Clouds - fewer with higher score */
+          <g opacity={Math.max(0.1, 1 - score / 85)} className="transition-all duration-700">
+            <ellipse cx="120" cy="55" rx="38" ry="14" fill="#94A3B8" opacity={0.45} />
+            <ellipse cx="145" cy="50" rx="28" ry="11" fill="#94A3B8" opacity={0.45} />
+            <ellipse cx="360" cy="40" rx="35" ry="12" fill="#94A3B8" opacity={0.35} />
+            <ellipse cx="390" cy="36" rx="26" ry="10" fill="#94A3B8" opacity={0.35} />
+          </g>
+        )}
+
+        {/* Monsoon Rain Precipitation Animation */}
+        {isMonsoonActive && (
+          <g className="transition-all duration-500">
+            {RAIN_STREAKS.map((r, i) => (
+              <line
+                key={`rain-${i}`}
+                x1={r.x}
+                y1={r.y}
+                x2={r.x - 7}
+                y2={r.y + 20}
+                stroke="#7DD3FC"
+                strokeWidth={1.3}
+                opacity={0.7}
+                strokeLinecap="round"
+                className="animate-monsoon-rain"
+                style={{
+                  animationDelay: `${r.d}s`,
+                }}
+              />
+            ))}
+          </g>
+        )}
 
         {/* ── Wind Turbines (Coastal & hill breeze arrays) ── */}
         {v.windTurbines > 0 && (
@@ -297,7 +393,7 @@ function CityVisualization({ result }: { result: SimulationResult }) {
         {/* ── Ground Base ── */}
         <rect x="0" y="270" width="600" height="130" fill="url(#groundGrad)" />
 
-        {/* ── Building 1 (High-tech residential hub with sloped Kerala gable solar roof) ── */}
+        {/* ── Building 1 (Residential Hub with Charupadi Shaded Verandas & CIAL Solar Roof) ── */}
         <g>
           <rect x="145" y="180" width="65" height="90" fill="#1E293B" rx="2" />
           {/* Windows */}
@@ -322,6 +418,15 @@ function CityVisualization({ result }: { result: SimulationResult }) {
             <line x1="160" y1="178" x2="177.5" y2="158" stroke="#60A5FA" strokeWidth="0.75" />
             <line x1="195" y1="178" x2="177.5" y2="158" stroke="#60A5FA" strokeWidth="0.75" />
           </g>
+
+          {/* Charupadi Shaded Balcony & Veranda Railing (Kerala architecture motif) */}
+          <g transform="translate(144, 230)">
+            <rect x="0" y="0" width="67" height="10" fill="#78350F" opacity={0.8} rx="1" />
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <line key={`charu-${i}`} x1={5 + i * 11} y1="2" x2={5 + i * 11} y2="8" stroke="#D97706" strokeWidth="1.2" />
+            ))}
+          </g>
+
           {/* Vertical bio-garden strip */}
           <rect x="142" y="195" width="3" height="70" fill="#10B981" opacity={v.greenRoofs} />
         </g>
@@ -377,7 +482,7 @@ function CityVisualization({ result }: { result: SimulationResult }) {
           </g>
         </g>
 
-        {/* ── Building 5 (Medium commercial & civic hub) ── */}
+        {/* ── Building 5 (Commercial & Civic Hub with Mugappu Gable Ventilation) ── */}
         <g>
           <rect x="440" y="210" width="60" height="60" fill="#1E293B" rx="2" />
           {[0, 1].map(row => (
@@ -389,13 +494,16 @@ function CityVisualization({ result }: { result: SimulationResult }) {
           ))}
           {/* Sloped Kerala roof style */}
           <polygon points="436,210 470,195 504,210" fill="url(#keralaSolarRoof)" opacity={Math.min(1, 0.2 + v.solarPanels * 0.8)} />
+          {/* Mugappu Bioclimatic Gable Louver */}
+          <polygon points="464,205 470,200 476,205" fill="#0F172A" stroke="#78350F" strokeWidth="0.7" />
+          <line x1="467" y1="203" x2="473" y2="203" stroke="#D97706" strokeWidth="0.8" />
         </g>
 
-        {/* ── Urban Transit Boulevard (Road + Clean Electric Tram corridor) ── */}
+        {/* ── Urban Transit Boulevard (Road + Clean Electric Tram Corridor) ── */}
         <rect x="0" y="285" width="600" height="28" fill="#1F2937" />
         <line x1="0" y1="299" x2="600" y2="299" stroke="#4B5563" strokeWidth="1" strokeDasharray="16 12" />
 
-        {/* Electric Tram Rails & Overhead catenary lines */}
+        {/* Electric Tram Rails & Overhead Catenary */}
         <g opacity={Math.min(1, v.buses * 1.3)} className="transition-all duration-500">
           <line x1="0" y1="287" x2="600" y2="287" stroke="#94A3B8" strokeWidth="0.75" />
           <line x1="0" y1="291" x2="600" y2="291" stroke="#94A3B8" strokeWidth="0.75" />
@@ -427,15 +535,60 @@ function CityVisualization({ result }: { result: SimulationResult }) {
           )}
         </g>
 
+        {/* ── MONSOON RESPONSE DYNAMICS: Flooding vs Sponge Infiltration ── */}
+        {isMonsoonActive && monsoonResult?.streetFlooded && (
+          <g className="transition-all duration-700">
+            {/* Flood water pooling on transit corridor */}
+            <rect
+              x="0"
+              y="285"
+              width="600"
+              height={monsoonResult.status === 'severe-flooding' ? 42 : 16}
+              fill={monsoonResult.status === 'severe-flooding' ? '#451A03' : '#1E3A8A'}
+              opacity={0.65}
+              className="animate-pulse"
+            />
+            {/* Stormwater ripples */}
+            <path d="M 30 295 Q 60 292 90 295 T 150 295" fill="none" stroke="#FCA5A5" strokeWidth="1.2" opacity={0.8} />
+            <path d="M 230 300 Q 270 296 310 300 T 390 300" fill="none" stroke="#FCA5A5" strokeWidth="1.2" opacity={0.8} />
+            <path d="M 450 297 Q 490 294 530 297 T 590 297" fill="none" stroke="#FCA5A5" strokeWidth="1.2" opacity={0.8} />
+
+            {monsoonResult.status === 'severe-flooding' && (
+              <g transform="translate(205, 268)">
+                <rect x="0" y="0" width="190" height="20" rx="4" fill="#7F1D1D" stroke="#EF4444" strokeWidth="1" />
+                <text x="95" y="14" fill="#FEE2E2" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                  ⚠ FLASH WATERLOGGING ALERT
+                </text>
+              </g>
+            )}
+          </g>
+        )}
+
+        {isMonsoonActive && monsoonResult?.status === 'sponge-resilient' && (
+          <g className="transition-all duration-700">
+            {/* Sponge City Infiltration Vectors */}
+            <path d="M 142 270 Q 136 298 132 328" stroke="#34D399" strokeWidth="2" strokeDasharray="3 3" fill="none" opacity={0.85} />
+            <path d="M 280 270 Q 284 298 288 328" stroke="#34D399" strokeWidth="2" strokeDasharray="3 3" fill="none" opacity={0.85} />
+            <path d="M 430 270 Q 426 298 422 328" stroke="#34D399" strokeWidth="2" strokeDasharray="3 3" fill="none" opacity={0.85} />
+
+            <g transform="translate(195, 268)">
+              <rect x="0" y="0" width="210" height="20" rx="4" fill="#064E3B" stroke="#10B981" strokeWidth="1" />
+              <text x="105" y="14" fill="#D1FAE5" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                ✓ 100% SPONGE ABSORPTION
+              </text>
+            </g>
+          </g>
+        )}
+
         {/* ── KERALA 2040 BACKWATER CANAL (Vembanad / Kochi Water Corridor) ── */}
-        {/* Canal banks */}
-        <rect x="0" y="328" width="600" height="48" fill="url(#backwaterCanalGrad)" className="transition-all duration-700" />
+        {/* Dynamic canal banks & water surface (swells during monsoon) */}
+        <rect x="0" y={canalY} width="600" height={canalHeight} fill="url(#backwaterCanalGrad)" className="transition-all duration-700" />
         {/* Granite stone promenade edge (Kallu kettu) */}
         <line x1="0" y1="328" x2="600" y2="328" stroke="#334155" strokeWidth="2.5" />
         <line x1="0" y1="376" x2="600" y2="376" stroke="#1E293B" strokeWidth="2" />
 
         {/* Gentle water ripples (opacity increases as water clears) */}
-        <g opacity={Math.min(0.7, 0.15 + v.waterFeatures * 0.55)} className="transition-all duration-700">
+        <g opacity={Math.min(0.85, 0.2 + v.waterFeatures * 0.55)} className="transition-all duration-700">
           <path d="M 30 338 Q 60 335 90 338 T 150 338" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.6} />
           <path d="M 220 348 Q 255 345 290 348 T 360 348" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.5} />
           <path d="M 420 340 Q 450 337 480 340 T 540 340" fill="none" stroke="#E0F2FE" strokeWidth="0.8" opacity={0.6} />
@@ -481,6 +634,13 @@ function CityVisualization({ result }: { result: SimulationResult }) {
           </>
         )}
 
+        {/* ── KERALA TROPICAL BROADLEAF & WETLAND BIO-BUFFERS ── */}
+        <TropicalFlora x={15} y={328} scale={0.75 + v.trees * 0.25} opacity={Math.min(1, 0.4 + v.trees * 0.8)} />
+        <TropicalFlora x={115} y={328} scale={0.7 + v.trees * 0.3} opacity={Math.min(1, 0.3 + v.trees * 0.9)} />
+        <TropicalFlora x={300} y={328} scale={0.65 + v.trees * 0.3} opacity={Math.min(1, 0.3 + v.trees * 0.9)} />
+        <TropicalFlora x={410} y={328} scale={0.7 + v.trees * 0.3} opacity={Math.min(1, 0.4 + v.trees * 0.8)} />
+        <TropicalFlora x={585} y={328} scale={0.8 + v.trees * 0.2} opacity={Math.min(1, 0.5 + v.trees * 0.8)} />
+
         {/* ── Standard Shrubbery & Native Bio-Belts ── */}
         <g className="transition-all duration-500">
           <ellipse cx="60" cy="388" rx="35" ry="6" fill="#047857" opacity={0.4} />
@@ -510,6 +670,22 @@ function CityVisualization({ result }: { result: SimulationResult }) {
         <span className="text-[#A3E635] font-semibold">KERALA 2040 MODEL</span>
         <span className="text-white/40 hidden sm:inline">• Water Metro & CIAL Solar Grid</span>
       </div>
+
+      {/* Monsoon Weather Status Badge */}
+      {isMonsoonActive && monsoonResult && (
+        <div
+          className="absolute top-3 right-3 flex items-center gap-2 rounded-lg border px-2.5 py-1 text-[10px] font-mono backdrop-blur-md transition-all duration-300"
+          style={{
+            backgroundColor: 'rgba(10, 31, 10, 0.9)',
+            borderColor: `${monsoonResult.badgeColor}60`,
+            color: monsoonResult.badgeColor,
+          }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full animate-ping" style={{ backgroundColor: monsoonResult.badgeColor }} />
+          <span className="font-bold">MONSOON ACTIVE (250mm)</span>
+          <span className="text-white/60 hidden sm:inline">• {monsoonResult.statusLabel}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -731,6 +907,124 @@ function ComparisonView({
 }
 
 /* ═══════════════════════════════════════════════════════════
+   MONSOON STRESS TEST ANALYSIS CARD
+   Detailed hydrological breakdown, live absorption & retry
+   ═══════════════════════════════════════════════════════════ */
+
+function MonsoonAnalysisCard({
+  result,
+  onRetry,
+  onClose,
+}: {
+  result: MonsoonTestResult;
+  onRetry: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      className="rounded-2xl border p-5 backdrop-blur-md transition-all duration-300 shadow-xl"
+      style={{
+        backgroundColor: 'rgba(10, 31, 10, 0.95)',
+        borderColor: `${result.badgeColor}50`,
+      }}
+    >
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl">🌧️</span>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono uppercase tracking-wider text-white/50">
+                Kerala Monsoon Stress Test (250mm / 24h)
+              </span>
+              <span
+                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase"
+                style={{
+                  backgroundColor: `${result.badgeColor}20`,
+                  color: result.badgeColor,
+                  borderColor: `${result.badgeColor}60`,
+                  borderWidth: 1,
+                }}
+              >
+                {result.statusLabel}
+              </span>
+            </div>
+            <h4 className="text-sm font-bold text-[#F5F5F0] mt-0.5">
+              Hydrological Response & Absorption Model
+            </h4>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRetry}
+            className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10 text-[#F5F5F0] hover:bg-white/20 transition-all flex items-center gap-1 active:scale-95"
+            title="Re-run simulation with latest parameter values"
+          >
+            <span>↺</span>
+            <span>Retry Test</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="px-2.5 py-1 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            title="Close monsoon simulation"
+          >
+            ✕ Close
+          </button>
+        </div>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
+          <span className="text-[11px] text-white/60 block">Sponge Infiltration</span>
+          <span className="text-xl font-mono font-bold text-[#34D399]">
+            {result.breakdown.permeableInfiltration}%
+          </span>
+          <span className="text-[10px] text-white/40 block mt-0.5">Permeable soil & canopy</span>
+        </div>
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
+          <span className="text-[11px] text-white/60 block">Retention & Drainage</span>
+          <span className="text-xl font-mono font-bold text-[#38BDF8]">
+            {result.breakdown.retentionDrainage}%
+          </span>
+          <span className="text-[10px] text-white/40 block mt-0.5">Cisterns & backwater canals</span>
+        </div>
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
+          <span className="text-[11px] text-white/60 block">Climate Defense</span>
+          <span className="text-xl font-mono font-bold text-[#A3E635]">
+            {result.breakdown.climateDefense}%
+          </span>
+          <span className="text-[10px] text-white/40 block mt-0.5">Shock resilience buffers</span>
+        </div>
+      </div>
+
+      {/* Summary Narrative */}
+      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-[#E8E5E0]/80 leading-relaxed mb-3">
+        <p className="font-semibold text-white mb-1">Hydrological Assessment:</p>
+        <p>{result.summary}</p>
+      </div>
+
+      {/* Actionable recommendations */}
+      <div className="space-y-1.5">
+        <span className="text-[11px] font-mono text-[#D4FF00] uppercase tracking-wider block">
+          Key Ecological Recommendations:
+        </span>
+        {result.recommendations.map((rec, idx) => (
+          <div key={idx} className="flex items-start gap-2 text-xs text-[#E8E5E0]/70">
+            <span className="text-[#10B981] mt-0.5">→</span>
+            <span>{rec}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 
@@ -747,6 +1041,10 @@ export default function CityLab() {
     copyShareUrl,
     hasSharedState,
     actionBoosts,
+    isMonsoonActive,
+    triggerMonsoonTest,
+    resetMonsoonTest,
+    monsoonResult,
   } = useCity();
 
   const [compareMode, setCompareMode] = useState(false);
@@ -888,6 +1186,19 @@ export default function CityLab() {
                     {compareMode ? '✕ Close Compare' : '⇄ Compare'}
                   </button>
 
+                  {/* Kerala Monsoon Stress Test Button */}
+                  <button
+                    onClick={isMonsoonActive ? resetMonsoonTest : triggerMonsoonTest}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                      isMonsoonActive
+                        ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/30'
+                        : 'bg-sky-500/15 text-sky-300 border border-sky-400/30 hover:bg-sky-500/25'
+                    }`}
+                    title="Simulate Kerala Southwest Monsoon downpour (250mm / 24h)"
+                  >
+                    <span>{isMonsoonActive ? '🌧️ Stop Monsoon' : '🌧️ Monsoon Test'}</span>
+                  </button>
+
                   {/* Share My City Button */}
                   <button
                     onClick={handleShare}
@@ -919,8 +1230,21 @@ export default function CityLab() {
           >
             {/* City SVG */}
             <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 backdrop-blur-sm overflow-hidden">
-              <CityVisualization result={simulation} />
+              <CityVisualization
+                result={simulation}
+                isMonsoonActive={isMonsoonActive}
+                monsoonResult={monsoonResult}
+              />
             </div>
+
+            {/* Monsoon Stress Test Analysis Card (renders when active) */}
+            {isMonsoonActive && monsoonResult && (
+              <MonsoonAnalysisCard
+                result={monsoonResult}
+                onRetry={triggerMonsoonTest}
+                onClose={resetMonsoonTest}
+              />
+            )}
 
             {/* Sustainability Gauge (mobile only) */}
             <div className="flex lg:hidden rounded-2xl border border-white/5 bg-white/[0.03] p-6 backdrop-blur-sm items-center justify-center">

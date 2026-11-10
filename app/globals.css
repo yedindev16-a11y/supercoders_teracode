@@ -157,6 +157,25 @@ input[type="range"]::-moz-range-thumb {
   animation: gradient-shift 8s ease infinite;
 }
 
+/* Monsoon Rain Animation */
+@keyframes monsoon-rain {
+  0% {
+    transform: translateY(-20px) translateX(0);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(280px) translateX(-50px);
+    opacity: 0;
+  }
+}
+
+.animate-monsoon-rain {
+  animation: monsoon-rain 0.75s linear infinite;
+}
+
 /* Section spacing */
 section {
   position: relative;
