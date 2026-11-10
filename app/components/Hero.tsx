@@ -37,29 +37,29 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center pt-20">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center pt-20 px-2 sm:px-4">
         {/* Competition Badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-8 inline-flex items-center gap-3 rounded-full border border-[#D4FF00]/30 bg-[#0D1B0D]/80 px-4 py-2 backdrop-blur-md"
+          className="mb-8 inline-flex max-w-[94vw] items-center gap-2.5 rounded-full border border-[#D4FF00]/30 bg-[#0D1B0D]/80 px-3.5 py-1.5 sm:px-4 sm:py-2 backdrop-blur-md"
         >
-          <span className="relative flex h-2 w-2">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D4FF00] opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#D4FF00]" />
           </span>
-          <span className="text-xs font-mono font-semibold tracking-widest text-[#D4FF00] uppercase">
+          <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-wider sm:tracking-widest text-[#D4FF00] uppercase truncate">
             TERRACODE 2026 • GREEN TOMORROW
           </span>
         </motion.div>
 
-        {/* Brand Headline */}
+        {/* Brand Headline - Responsive font size and tracking to prevent horizontal overflow on 375px screens */}
         <motion.h1
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="text-6xl font-black tracking-[0.2em] sm:text-7xl md:text-8xl lg:text-9xl font-mono text-[#F5F5F0]"
+          className="text-4xl xs:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-wider sm:tracking-[0.18em] font-mono text-[#F5F5F0] max-w-full break-words"
         >
           ECO<span className="text-[#D4FF00] drop-shadow-[0_0_35px_rgba(212,255,0,0.4)]">TERRA</span>
         </motion.h1>
@@ -69,7 +69,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="mt-6 text-xl font-medium tracking-tight text-[#A3E635] sm:text-2xl md:text-3xl font-sans"
+          className="mt-4 sm:mt-6 text-lg sm:text-2xl md:text-3xl font-medium tracking-tight text-[#A3E635] font-sans px-2"
         >
           The future isn&apos;t inherited. It&apos;s designed.
         </motion.p>
@@ -79,7 +79,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.55 }}
-          className="mt-6 max-w-2xl text-base leading-relaxed text-[#F5F5F0]/70 sm:text-lg"
+          className="mt-4 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-[#F5F5F0]/70 px-2"
         >
           An interactive sustainability platform exploring how urban centers can transition toward a resilient,
           carbon-neutral tomorrow. Simulate real-time eco-parameters, visualize living city dynamics, and discover practical solutions.
@@ -90,15 +90,15 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
+          className="mt-8 sm:mt-10 flex w-full flex-col items-center justify-center gap-3.5 sm:w-auto sm:flex-row sm:gap-4 px-4 sm:px-0"
         >
           <button
             onClick={() => scrollTo('challenge')}
-            className="group relative inline-flex h-13 items-center justify-center gap-3 overflow-hidden rounded-full bg-[#D4FF00] px-8 text-base font-bold text-[#0A1F0A] transition-all duration-300 hover:bg-[#A3E635] hover:shadow-[0_0_30px_rgba(212,255,0,0.5)] active:scale-95"
+            className="group relative inline-flex h-12 sm:h-13 w-full sm:w-auto items-center justify-center gap-3 overflow-hidden rounded-full bg-[#D4FF00] px-7 sm:px-8 text-sm sm:text-base font-bold text-[#0A1F0A] transition-all duration-300 hover:bg-[#A3E635] hover:shadow-[0_0_30px_rgba(212,255,0,0.5)] active:scale-95"
           >
             <span>Explore the Future</span>
             <svg
-              className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
+              className="h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -109,9 +109,9 @@ export default function Hero() {
 
           <button
             onClick={() => scrollTo('city-lab')}
-            className="group inline-flex h-13 items-center justify-center gap-2 rounded-full border border-[#D4FF00]/40 bg-[#0D1B0D]/50 px-8 text-base font-semibold text-[#F5F5F0] backdrop-blur-sm transition-all duration-300 hover:border-[#D4FF00] hover:bg-[#D4FF00]/10 hover:text-[#D4FF00] active:scale-95"
+            className="group inline-flex h-12 sm:h-13 w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-[#D4FF00]/40 bg-[#0D1B0D]/50 px-7 sm:px-8 text-sm sm:text-base font-semibold text-[#F5F5F0] backdrop-blur-sm transition-all duration-300 hover:border-[#D4FF00] hover:bg-[#D4FF00]/10 hover:text-[#D4FF00] active:scale-95"
           >
-            <svg className="h-5 w-5 text-[#D4FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-[#D4FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
             </svg>
             <span>Design Your City</span>
@@ -123,23 +123,23 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.9 }}
-          className="mt-16 grid grid-cols-2 gap-8 border-t border-white/10 pt-8 sm:grid-cols-4"
+          className="mt-12 sm:mt-16 grid w-full grid-cols-2 gap-4 sm:gap-8 border-t border-white/10 pt-6 sm:pt-8 sm:grid-cols-4 px-2 sm:px-0"
         >
           <div>
-            <div className="text-2xl font-bold font-mono text-[#D4FF00]">5 Systems</div>
-            <div className="text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Simulated Live</div>
+            <div className="text-xl sm:text-2xl font-bold font-mono text-[#D4FF00]">5 Systems</div>
+            <div className="text-[10px] sm:text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Simulated Live</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-[#34D399]">100% Client</div>
-            <div className="text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Reactive Engine</div>
+            <div className="text-xl sm:text-2xl font-bold font-mono text-[#34D399]">100% Client</div>
+            <div className="text-[10px] sm:text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Reactive Engine</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-[#A3E635]">6 Indicators</div>
-            <div className="text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Environmental Impact</div>
+            <div className="text-xl sm:text-2xl font-bold font-mono text-[#A3E635]">6 Indicators</div>
+            <div className="text-[10px] sm:text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">Environmental Impact</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-[#10B981]">SDG Aligned</div>
-            <div className="text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">UN Urban Goals</div>
+            <div className="text-xl sm:text-2xl font-bold font-mono text-[#10B981]">SDG Aligned</div>
+            <div className="text-[10px] sm:text-xs uppercase tracking-wider text-[#F5F5F0]/50 mt-1">UN Urban Goals</div>
           </div>
         </motion.div>
       </div>

@@ -11,6 +11,14 @@ import {
   getScoreColor,
 } from '../lib/simulation';
 import { useCity } from '../context/CityContext';
+import {
+  CloudRainIcon,
+  RefreshIcon,
+  CloseIcon,
+  CompareIcon,
+  LinkIcon,
+  CheckIcon,
+} from './Icons';
 
 /* ─────────────────────── Icon Components ─────────────────────── */
 
@@ -554,10 +562,13 @@ function CityVisualization({
             <path d="M 450 297 Q 490 294 530 297 T 590 297" fill="none" stroke="#FCA5A5" strokeWidth="1.2" opacity={0.8} />
 
             {monsoonResult.status === 'severe-flooding' && (
-              <g transform="translate(205, 268)">
-                <rect x="0" y="0" width="190" height="20" rx="4" fill="#7F1D1D" stroke="#EF4444" strokeWidth="1" />
-                <text x="95" y="14" fill="#FEE2E2" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-                  ⚠ FLASH WATERLOGGING ALERT
+              <g transform="translate(195, 268)">
+                <rect x="0" y="0" width="210" height="20" rx="4" fill="#7F1D1D" stroke="#EF4444" strokeWidth="1" />
+                <path d="M 12 15 L 18 5 L 24 15 Z" fill="#FEE2E2" />
+                <line x1="18" y1="9" x2="18" y2="11.5" stroke="#7F1D1D" strokeWidth="1.2" strokeLinecap="round" />
+                <circle cx="18" cy="13.2" r="0.6" fill="#7F1D1D" />
+                <text x="114" y="14" fill="#FEE2E2" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                  FLASH WATERLOGGING ALERT
                 </text>
               </g>
             )}
@@ -573,8 +584,9 @@ function CityVisualization({
 
             <g transform="translate(195, 268)">
               <rect x="0" y="0" width="210" height="20" rx="4" fill="#064E3B" stroke="#10B981" strokeWidth="1" />
-              <text x="105" y="14" fill="#D1FAE5" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-                ✓ 100% SPONGE ABSORPTION
+              <path d="M 14 10.5 L 17.5 14 L 23.5 7.5" fill="none" stroke="#D1FAE5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="116" y="14" fill="#D1FAE5" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                100% SPONGE ABSORPTION
               </text>
             </g>
           </g>
@@ -934,7 +946,7 @@ function MonsoonAnalysisCard({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <span className="text-2xl">🌧️</span>
+          <CloudRainIcon className="h-6 w-6 shrink-0" />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono uppercase tracking-wider text-white/50">
@@ -964,7 +976,7 @@ function MonsoonAnalysisCard({
             className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10 text-[#F5F5F0] hover:bg-white/20 transition-all flex items-center gap-1 active:scale-95"
             title="Re-run simulation with latest parameter values"
           >
-            <span>↺</span>
+            <RefreshIcon className="h-3.5 w-3.5" />
             <span>Retry Test</span>
           </button>
           <button
@@ -972,7 +984,7 @@ function MonsoonAnalysisCard({
             className="px-2.5 py-1 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-all"
             title="Close monsoon simulation"
           >
-            ✕ Close
+            <span className="inline-flex items-center gap-1"><CloseIcon className="h-3.5 w-3.5" />Close</span>
           </button>
         </div>
       </div>
@@ -1105,7 +1117,8 @@ export default function CityLab() {
 
           {hasSharedState && (
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-xs font-mono text-[#34D399]">
-              <span>🔗 Custom city configuration loaded via shared URL</span>
+              <LinkIcon className="h-4 w-4 shrink-0" />
+              <span>Custom city configuration loaded via shared URL</span>
             </div>
           )}
         </motion.header>
@@ -1183,7 +1196,10 @@ export default function CityLab() {
                     }`}
                     aria-pressed={compareMode}
                   >
-                    {compareMode ? '✕ Close Compare' : '⇄ Compare'}
+                    <span className="inline-flex items-center gap-1.5">
+                      {compareMode ? <CloseIcon className="h-3.5 w-3.5" /> : <CompareIcon className="h-3.5 w-3.5" />}
+                      {compareMode ? 'Close Compare' : 'Compare'}
+                    </span>
                   </button>
 
                   {/* Kerala Monsoon Stress Test Button */}
@@ -1196,7 +1212,8 @@ export default function CityLab() {
                     }`}
                     title="Simulate Kerala Southwest Monsoon downpour (250mm / 24h)"
                   >
-                    <span>{isMonsoonActive ? '🌧️ Stop Monsoon' : '🌧️ Monsoon Test'}</span>
+                    <CloudRainIcon className="h-4 w-4 shrink-0" />
+                    <span>{isMonsoonActive ? 'Stop Monsoon' : 'Monsoon Test'}</span>
                   </button>
 
                   {/* Share My City Button */}
@@ -1208,7 +1225,7 @@ export default function CityLab() {
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
-                    <span>{copied ? 'Copied Link! 📋' : 'Share My City'}</span>
+                    <span>{copied ? 'Copied Link!' : 'Share My City'}</span>
                   </button>
                 </div>
               </div>
