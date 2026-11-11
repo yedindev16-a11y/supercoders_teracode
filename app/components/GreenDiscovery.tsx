@@ -246,7 +246,7 @@ function SolutionCard({
       className={`group relative ${item.span}`}
     >
       <div
-        className={`relative h-full overflow-hidden rounded-2xl border ${item.borderColor} bg-[#0A1F0A] p-6 transition-all duration-300 hover:scale-[1.02] md:p-8`}
+        className={`relative h-full overflow-hidden rounded-2xl border ${item.borderColor} bg-[#0A1F0A] p-4 sm:p-6 transition-all duration-300 hover:scale-[1.02] md:p-8`}
       >
         {/* Hover background glow */}
         <div
@@ -302,7 +302,7 @@ export default function GreenDiscovery() {
     <section
       id="discovery"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0A1F0A] py-24 md:py-32"
+      className="relative overflow-hidden bg-[#0A1F0A] py-16 sm:py-24 md:py-32"
     >
       {/* Background pattern */}
       <div
@@ -314,7 +314,7 @@ export default function GreenDiscovery() {
         }}
       />
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

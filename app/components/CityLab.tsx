@@ -1178,34 +1178,33 @@ export default function CityLab() {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-3 border-t border-white/5">
+                <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-white/5">
                   <button
                     onClick={resetToDefaults}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-[#E8E5E0]/60 hover:bg-white/10 hover:text-[#E8E5E0] transition-colors duration-200"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-[#E8E5E0]/60 hover:bg-white/10 hover:text-[#E8E5E0] transition-colors duration-200 inline-flex items-center gap-1.5 active:scale-95"
                     title="Reset to baseline"
                   >
-                    ↺ Reset
+                    <RefreshIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span>Reset</span>
                   </button>
 
                   <button
                     onClick={() => setCompareMode(!compareMode)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 inline-flex items-center gap-1.5 active:scale-95 ${
                       compareMode
                         ? 'bg-[#059669] text-white font-semibold'
                         : 'bg-white/5 text-[#E8E5E0]/60 hover:bg-white/10 hover:text-[#E8E5E0]'
                     }`}
                     aria-pressed={compareMode}
                   >
-                    <span className="inline-flex items-center gap-1.5">
-                      {compareMode ? <CloseIcon className="h-3.5 w-3.5" /> : <CompareIcon className="h-3.5 w-3.5" />}
-                      {compareMode ? 'Close Compare' : 'Compare'}
-                    </span>
+                    {compareMode ? <CloseIcon className="h-3.5 w-3.5 shrink-0" /> : <CompareIcon className="h-3.5 w-3.5 shrink-0" />}
+                    <span>{compareMode ? 'Close Compare' : 'Compare'}</span>
                   </button>
 
                   {/* Kerala Monsoon Stress Test Button */}
                   <button
                     onClick={isMonsoonActive ? resetMonsoonTest : triggerMonsoonTest}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 inline-flex items-center gap-1.5 active:scale-95 ${
                       isMonsoonActive
                         ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/30'
                         : 'bg-sky-500/15 text-sky-300 border border-sky-400/30 hover:bg-sky-500/25'
@@ -1219,12 +1218,16 @@ export default function CityLab() {
                   {/* Share My City Button */}
                   <button
                     onClick={handleShare}
-                    className="relative ml-auto px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] text-[#0A1F0A] hover:bg-[#A3E635] transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95"
+                    className="relative ml-auto px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] text-[#0A1F0A] hover:bg-[#A3E635] transition-all duration-200 inline-flex items-center gap-1.5 shadow-sm active:scale-95"
                     title="Share this exact city configuration via URL"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
+                    {copied ? (
+                      <CheckIcon className="w-3.5 h-3.5 text-[#0A1F0A] shrink-0" />
+                    ) : (
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    )}
                     <span>{copied ? 'Copied Link!' : 'Share My City'}</span>
                   </button>
                 </div>

@@ -371,7 +371,7 @@ export default function Challenge() {
     <section
       id="challenge"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0D1B0D] py-24 md:py-32"
+      className="relative overflow-hidden bg-[#0D1B0D] py-16 sm:py-24 md:py-32"
     >
       {/* Subtle background texture */}
       <div
@@ -383,26 +383,26 @@ export default function Challenge() {
         }}
       />
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="mb-16 md:mb-20"
+          className="mb-10 sm:mb-16 md:mb-20 px-1"
         >
           <div className="mb-4 h-1 w-16 rounded-full bg-[#84CC16]" />
           <h2 className="text-3xl font-bold tracking-tight text-[#F5F5F0] sm:text-4xl md:text-5xl">
             The Urban Challenge
           </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#F5F5F0]/60">
+          <p className="mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-[#F5F5F0]/60">
             Our cities are the engines of modern civilization — and the epicenter of its
             greatest environmental crisis.
           </p>
         </motion.div>
 
         {/* Two-column layout */}
-        <div className="grid gap-16 lg:grid-cols-2 lg:gap-20 items-center">
+        <div className="grid gap-10 sm:gap-16 lg:grid-cols-2 lg:gap-20 items-center">
           {/* Left column — narrative + stats */}
           <div className="space-y-10">
             <motion.div

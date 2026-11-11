@@ -13,19 +13,19 @@ export default function Footer() {
   return (
     <footer id="closing" className="relative w-full overflow-hidden">
       {/* ── PART 1: CLOSING CTA SECTION ── */}
-      <div className="relative bg-[#0D1B0D] py-28 px-6 text-center border-t border-white/10">
+      <div className="relative bg-[#0D1B0D] py-16 sm:py-28 px-4 sm:px-6 text-center border-t border-white/10">
         {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[700px] rounded-full bg-[#10B981]/10 blur-[140px]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-4xl">
+        <div className="relative z-10 mx-auto max-w-4xl px-2">
           <motion.blockquote
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-serif italic text-[#F5F5F0] leading-relaxed"
+            className="text-xl sm:text-3xl md:text-4xl font-serif italic text-[#F5F5F0] leading-relaxed"
           >
             &ldquo;We do not inherit the earth from our ancestors; we borrow it from our children.&rdquo;
           </motion.blockquote>
@@ -35,7 +35,7 @@ export default function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-4 text-sm font-mono uppercase tracking-widest text-[#D4FF00]"
+            className="mt-4 text-xs sm:text-sm font-mono uppercase tracking-widest text-[#D4FF00]"
           >
             — Native American Proverb
           </motion.p>
@@ -45,19 +45,19 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-12 flex flex-col items-center justify-center gap-6"
+            className="mt-8 sm:mt-12 flex flex-col items-center justify-center gap-5 sm:gap-6"
           >
-            <p className="max-w-xl text-base sm:text-lg text-[#F5F5F0]/70">
+            <p className="max-w-xl text-sm sm:text-base md:text-lg text-[#F5F5F0]/70 leading-relaxed">
               The blueprint for a regenerative tomorrow begins with active experimentation today.
               Dive back into the simulation and explore what is possible.
             </p>
 
             <button
               onClick={() => scrollTo('city-lab')}
-              className="inline-flex items-center gap-3 rounded-full bg-[#D4FF00] px-8 py-4 text-base font-bold text-[#0A1F0A] transition-all hover:bg-[#A3E635] hover:shadow-[0_0_30px_rgba(212,255,0,0.4)] active:scale-95"
+              className="inline-flex items-center gap-2.5 sm:gap-3 rounded-full bg-[#D4FF00] px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-[#0A1F0A] transition-all hover:bg-[#A3E635] hover:shadow-[0_0_30px_rgba(212,255,0,0.4)] active:scale-95"
             >
               <span>Return to City Lab</span>
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
               </svg>
             </button>
@@ -66,7 +66,7 @@ export default function Footer() {
       </div>
 
       {/* ── PART 2: FORMAL FOOTER ── */}
-      <div className="bg-[#0A1F0A] py-16 px-6 border-t border-white/5">
+      <div className="bg-[#0A1F0A] py-12 sm:py-16 px-4 sm:px-6 border-t border-white/5">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-8">
           {/* Brand & Organizers */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
