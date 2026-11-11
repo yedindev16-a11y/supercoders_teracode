@@ -18,6 +18,7 @@ import {
   CompareIcon,
   LinkIcon,
   CheckIcon,
+  LeafIcon,
 } from './Icons';
 
 /* ─────────────────────── Icon Components ─────────────────────── */
@@ -676,28 +677,60 @@ function CityVisualization({
         </g>
       </svg>
 
-      {/* Subtle Kerala 2040 Tech Badge overlay */}
-      <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-white/10 bg-[#0A1F0A]/80 px-2.5 py-1 text-[10px] font-mono backdrop-blur-md">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#D4FF00] animate-pulse" />
-        <span className="text-[#A3E635] font-semibold">KERALA 2040 MODEL</span>
-        <span className="text-white/40 hidden sm:inline">• Water Metro & CIAL Solar Grid</span>
+      {/* ── FLOATING LIVE SUSTAINABILITY INDICATORS (Inspired by live biosphere telemetry) ── */}
+      {/* 1. Top-Left Live Index Telemetry Pill */}
+      <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-[#0A1F0A]/85 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono backdrop-blur-md shadow-lg shadow-black/40 pointer-events-none transition-all duration-300">
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D4FF00] opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#D4FF00]" />
+        </span>
+        <span className="text-[#F5F5F0] font-semibold">
+          INDEX: <strong className="text-[#D4FF00] font-black">{score}</strong>/100
+        </span>
+        <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-[#34D399] uppercase font-bold hidden xs:inline">
+          {getScoreLabel(score)}
+        </span>
       </div>
 
-      {/* Monsoon Weather Status Badge */}
-      {isMonsoonActive && monsoonResult && (
+      {/* 2. Top-Right Live Atmospheric / Monsoon Telemetry Pill */}
+      {isMonsoonActive && monsoonResult ? (
         <div
-          className="absolute top-3 right-3 flex items-center gap-2 rounded-lg border px-2.5 py-1 text-[10px] font-mono backdrop-blur-md transition-all duration-300"
+          className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono backdrop-blur-md shadow-lg pointer-events-none transition-all duration-300"
           style={{
-            backgroundColor: 'rgba(10, 31, 10, 0.9)',
-            borderColor: `${monsoonResult.badgeColor}60`,
+            backgroundColor: 'rgba(10, 31, 10, 0.92)',
+            borderColor: `${monsoonResult.badgeColor}70`,
             color: monsoonResult.badgeColor,
           }}
         >
-          <span className="h-1.5 w-1.5 rounded-full animate-ping" style={{ backgroundColor: monsoonResult.badgeColor }} />
-          <span className="font-bold">MONSOON ACTIVE (250mm)</span>
-          <span className="text-white/60 hidden sm:inline">• {monsoonResult.statusLabel}</span>
+          <span className="h-2 w-2 rounded-full animate-ping shrink-0" style={{ backgroundColor: monsoonResult.badgeColor }} />
+          <span className="font-bold">MONSOON: {monsoonResult.statusLabel}</span>
+          <span className="text-white/60 hidden sm:inline">(250mm)</span>
+        </div>
+      ) : (
+        <div className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-[#0A1F0A]/85 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono backdrop-blur-md shadow-lg shadow-black/40 pointer-events-none transition-all duration-300">
+          <LeafIcon className="w-3.5 h-3.5 text-[#34D399] shrink-0" />
+          <span className="text-[#F5F5F0]">
+            CO₂: <strong className="text-[#34D399]">-{result.indicators.co2ReductionPercent}%</strong>
+          </span>
+          <span className="text-white/40 hidden sm:inline">• AQI {result.indicators.airQualityIndex}</span>
         </div>
       )}
+
+      {/* 3. Bottom-Left Floating Clean Energy & Mobility Status */}
+      <div className="absolute bottom-2.5 sm:bottom-3 left-2.5 sm:left-3 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-[#0D1B0D]/85 px-2 sm:px-3 py-1 text-[9px] sm:text-[11px] font-mono backdrop-blur-md shadow-md pointer-events-none transition-all duration-300">
+        <SunIcon className="w-3 h-3 text-yellow-400 shrink-0" />
+        <span className="text-[#E8E5E0]/80">
+          Clean Grid: <strong className="text-[#D4FF00]">{Math.round(v.solarPanels * 100)}%</strong>
+        </span>
+      </div>
+
+      {/* 4. Bottom-Right Floating Kerala Backwater & Climate Status */}
+      <div className="absolute bottom-2.5 sm:bottom-3 right-2.5 sm:right-3 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-[#0D1B0D]/85 px-2 sm:px-3 py-1 text-[9px] sm:text-[11px] font-mono backdrop-blur-md shadow-md pointer-events-none transition-all duration-300">
+        <DropletIcon className="w-3 h-3 text-sky-400 shrink-0" />
+        <span className="text-[#E8E5E0]/80">
+          Resilience: <strong className="text-[#38BDF8]">{result.indicators.climateResilience}/100</strong>
+        </span>
+      </div>
     </div>
   );
 }

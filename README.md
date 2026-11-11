@@ -53,6 +53,9 @@ $$\text{DISCOVER} \longrightarrow \text{EXPLORE} \longrightarrow \text{DESIGN} \
 ### 3. 🏙️ Future City Lab Simulator (`CityLab.tsx`)
 The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 * **Unified Reactive State (`CityContext.tsx`):** A centralized `cityState` synchronizes the 5 core parameters across the simulator, city visual, Impact Observatory, and action scorecard.
+* **Floating Live Sustainability Telemetry HUD:**
+  * Real-time translucent glass HUD badges positioned directly over the 2.5D city visualization.
+  * Live **Index Telemetry** (`INDEX: score/100 • Progressive/Optimal`), **CO₂ Abatement** (`CO₂: -X% • AQI`), **Clean Grid Power** (`Clean Grid: X%`), and **Hydrological Resilience** updating dynamically as sliders move.
 * **5 Interactive Sustainability Controls:**
   1. **Renewable Energy (0–100%):** Deploys rooftop solar arrays and clean power grids.
   2. **Urban Green Coverage (0–100%):** Expands vertical gardens, city parks, native tree canopy, and bio-corridors.
@@ -93,12 +96,26 @@ The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 * **2026–2050 Strategic Transition Roadmap:** Milestone cards connecting localized microgrids to net-zero equilibrium targets.
 
 ### 5. 🌿 Green Discovery Solutions (`GreenDiscovery.tsx`)
-* Modern bento-grid layout showcasing 6 foundational pillars:
-  * Clean Energy, Water Conservation, Sustainable Transport, Circular Economy, Biodiversity Corridors, and Green Infrastructure.
-* Bespoke geometric SVG iconography and adaptive hover state glows.
+* Modern bento-grid layout showcasing 6 foundational pillars enriched with Kerala environmental imagery:
+  * **Clean Energy Microgrids:** CIAL 100% solar model and floating reservoir photovoltaic arrays.
+  * **Backwater Hydrology:** Kuttanad & Vembanad Kayal bio-drainage and wetland sponge buffers.
+  * **Electric Water Metro & Trams:** Kochi Water Metro electric catamaran fleets and active-mobility feeder loops.
+  * **Circular Waste Recovery:** Haritha Karma Sena community segregation and zero-landfill loops.
+  * **Western Ghats Biodiversity:** Silent Valley rainforest corridor preservation and native flora pollinator highways.
+  * **Bioclimatic Green Architecture:** Traditional Nalukettu shaded courtyard micro-ventilation and living walls.
+* Atmospheric environmental vector backdrops with focus badges (e.g. `FOCUS • CIAL 100% SOLAR BENCHMARK`) and regional implementation callouts.
 
-### 6. ✅ Take Action Interactive Checklist (`TakeAction.tsx`)
+### 6. ✅ Take Action Interactive Checklist & Scorecard (`TakeAction.tsx`)
 * Contrast editorial layout (`#F5F5F0`) highlighting actionable human agency.
+* **Daily & Weekly Habit Cadence Filters:** Toggle effortlessly between *All Habits (12)*, *Daily Habits (6)*, and *Weekly Goals (6)* with dedicated sectoral filters.
+* **Dual Cadence Completion Tracking:** Separate visual progress meters for daily consistency and weekly milestones alongside the primary mobilization bar.
+* **5 Achievement Badges System:**
+  1. **First Spark:** Complete your first sustainability action.
+  2. **Clean Energy Steward:** Deploy 2 home energy efficiency routines.
+  3. **Zero-Emission Commuter:** Shift 2 transit trips to active/electric mobility.
+  4. **Kerala Biome Steward:** Mobilize 2 community rewilding or circular composting efforts.
+  5. **Earth Architect 2040:** Activate 8 or more sustainable actions across all sectors.
+* **Interactive Micro-Animation Feedback:** Spring scale micro-interactions, subtle celebratory badge notifications, and animated checkmarks on action completion.
 * **Scorecard-to-City Feedback Loop:** All 12 practical actions directly inject parameter boosts into the live city model (+3% to +5% to relevant systems).
 * **Live Index Delta Tracking:** Real-time index change readout (e.g. `14 → 23 (+9 pts)`) showing the tangible impact of individual actions on the city.
 * **Duplicate Reward Prevention:** Set-based toggle keys ensure single-grant boosts per action.
