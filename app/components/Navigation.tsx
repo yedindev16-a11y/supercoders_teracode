@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const NAV_LINKS = [
   { label: 'Challenge', href: '#challenge' },
+  { label: 'Learn', href: '#why-sustainability' },
   { label: 'City Lab', href: '#city-lab' },
   { label: 'Observatory', href: '#observatory' },
   { label: 'Discovery', href: '#discovery' },
   { label: 'Action', href: '#action' },
+  { label: 'Garden', href: '#garden' },
 ] as const;
 
 function LeafIcon({ className }: { className?: string }) {

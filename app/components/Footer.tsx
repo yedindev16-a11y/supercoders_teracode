@@ -94,6 +94,9 @@ export default function Footer() {
             <button onClick={() => scrollTo('challenge')} className="hover:text-[#D4FF00] transition-colors">
               Challenge
             </button>
+            <button onClick={() => scrollTo('why-sustainability')} className="hover:text-[#D4FF00] transition-colors">
+              Learn
+            </button>
             <button onClick={() => scrollTo('city-lab')} className="hover:text-[#D4FF00] transition-colors">
               City Lab
             </button>
@@ -105,6 +108,9 @@ export default function Footer() {
             </button>
             <button onClick={() => scrollTo('action')} className="hover:text-[#D4FF00] transition-colors">
               Take Action
+            </button>
+            <button onClick={() => scrollTo('garden')} className="hover:text-[#D4FF00] transition-colors">
+              Garden
             </button>
           </div>
 

@@ -50,7 +50,14 @@ $$\text{DISCOVER} \longrightarrow \text{EXPLORE} \longrightarrow \text{DESIGN} \
   * **40%** energy-related CO₂ from buildings *(International Energy Agency)*
 * Dynamic split-screen SVG city skyline contrasting **"Today"** (smog, factories, congestion) vs. **"Tomorrow"** (rooftop gardens, micro-turbines, solar, and bike corridors).
 
-### 3. 🏙️ Future City Lab Simulator (`CityLab.tsx`)
+### 3. 📖 Learn & Discover: Why Sustainability Matters (`WhySustainabilityMatters.tsx`)
+* **Core Ecological & Civic Pillars:**
+  1. **Why Protecting Nature Matters:** Western Ghats catchment hydrology feeding 44 rivers, regulating regional climate, and preventing downstream flash flooding.
+  2. **How Individuals & Communities Create Change:** The citizen multiplier effect showing how 25–30% local habit adoption flips municipal policies and commercial supply chains.
+  3. **How Sustainable Habits Shape the Future:** Moving from extractive exhaustion to regenerative equilibrium with Kerala 2040 bioclimatic models.
+* **Interactive Deep-Dive Tabs & Verified Benchmarks:** Regional data citations from the *Kerala State Biodiversity Board* and *UN-Habitat*.
+
+### 4. 🏙️ Future City Lab Simulator (`CityLab.tsx`)
 The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 * **Unified Reactive State (`CityContext.tsx`):** A centralized `cityState` synchronizes the 5 core parameters across the simulator, city visual, Impact Observatory, and action scorecard.
 * **Floating Live Sustainability Telemetry HUD:**
@@ -121,7 +128,26 @@ The centerpiece simulation engine providing 2.5D/isometric visual reactivity:
 * **Duplicate Reward Prevention:** Set-based toggle keys ensure single-grant boosts per action.
 * **Zero-Hydration Persistence:** Local storage synchronization (`ecoterra-actions`) with React 19 safety.
 
-### 7. 🌌 Closing Experience & Global Footer (`Footer.tsx`)
+### 7. 🌳 Grow Your Future — Virtual Garden & Real-World Impact Registry (`VirtualGarden.tsx`)
+* **Interactive Botanical Growth Engine (5 Progressive Stages):**
+  1. **Stage 1 (0–19%):** *Malabar Heirloom Seed* germinating in fertile vermicompost soil.
+  2. **Stage 2 (20–39%):** *Emerging Sprout* with twin cotyledons beginning active phototropism.
+  3. **Stage 3 (40–59%):** *Hardy Sapling* establishing deep hydrological root systems.
+  4. **Stage 4 (60–79%):** *Young Tree* spreading tropical fronds and cooling localized microclimates.
+  5. **Stage 5 (80–100%):** *Mature Heritage Palm (Kera)* sequestering ~22.4 kg CO₂/yr with arching feather fronds, coconut clusters, and pollinator activity.
+* **Dual Growth Accelerators:**
+  * **Scorecard Habit Link:** Every completed action awards +6% natural vitality (+72% maximum).
+  * **Direct Virtual Care Controls:** Low-flow rainwater irrigation (💧), organic compost humus (🌿), and solar exposure (☀️) providing tactile micro-interaction boosts.
+* **Maturity Celebration & Virtual Grove:**
+  * Milestone achievement badge upon reaching 100% canopy maturity.
+  * **"Plant Another Virtual Tree"** button that increments the user's permanent Virtual Grove counter and restarts a fresh seedling.
+* **Citizen Real-World Planting Registry:**
+  * **Transparent Partitioning:** Distinct self-reported community log clearly separated from digital simulation models.
+  * **Native Kerala Species:** Coconut Palm, Jackfruit Tree (*Plavu*), Golden Shower (*Kanikkonna*), Nilambur Teak, Country Mango, and Neem.
+  * **Client-Side Photo Attachment:** Upload sapling photos with immediate base64 client preview without server storage requirements.
+  * **Community Canopy Feed:** Tracks district location, date, planter attribution, and estimated future physical CO₂ absorption potential.
+
+### 8. 🌌 Closing Experience & Global Footer (`Footer.tsx`)
 * Inspirational Native American proverb framing intergenerational ecological stewardship.
 * Direct action return anchor to the City Lab.
 * Official accreditation to TERRACODE 2026, MEA Engineering College CSE Department, and FOSS Club.
@@ -193,14 +219,17 @@ The visual language balances cinematic depth with technical precision:
 supercoders_teracode/
 ├── app/
 │   ├── components/
-│   │   ├── Challenge.tsx         # Environmental challenge & split skyline SVG
-│   │   ├── CityLab.tsx           # 2.5D isometric simulator & Kerala 2040 visual touches
-│   │   ├── Footer.tsx            # Closing quote, attribution & footer
-│   │   ├── GreenDiscovery.tsx    # 6-pillar bento grid solutions
-│   │   ├── Hero.tsx              # Cinematic hero section with ambient glow
-│   │   ├── ImpactObservatory.tsx # Dual Radar chart (Live vs 2040 Target) & metric bars
-│   │   ├── Navigation.tsx        # Glassmorphic header & mobile navigation
-│   │   └── TakeAction.tsx        # Action checklist wired to city parameter boosts
+│   │   ├── Challenge.tsx                # Environmental challenge & split skyline SVG
+│   │   ├── CityLab.tsx                  # 2.5D isometric simulator, HUD & Kerala 2040 visual touches
+│   │   ├── Footer.tsx                   # Closing quote, attribution & footer
+│   │   ├── GreenDiscovery.tsx           # 6-pillar bento grid solutions with Kerala benchmarks
+│   │   ├── Hero.tsx                     # Cinematic hero section with ambient glow
+│   │   ├── Icons.tsx                    # Lightweight SVG system icon suite (zero external bloat)
+│   │   ├── ImpactObservatory.tsx        # Dual Radar chart (Live vs 2040 Target) & metric bars
+│   │   ├── Navigation.tsx               # Glassmorphic header & mobile navigation
+│   │   ├── TakeAction.tsx               # Daily/weekly habits, 5 badges & city boost wiring
+│   │   ├── VirtualGarden.tsx            # 5-stage Kerala tree growth simulator & citizen registry
+│   │   └── WhySustainabilityMatters.tsx # 3-pillar ecological & civic education deep-dive
 │   ├── context/
 │   │   └── CityContext.tsx       # Unified reactive cityState, targets, boosts & share link
 │   ├── lib/
